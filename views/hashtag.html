@@ -12,7 +12,7 @@
         <script src="/socket.io/socket.io.js"></script>
     </head>
     <body>
-        <h1>Sentiment Analysis for Apple</h1>
+        <h1>SentiStock</h1>
         
         <div id="container"></div>
         
@@ -45,7 +45,7 @@
 	            renderTo : 'container',
 	            events : {
 	                load : function() {
-	                    // set up the updating of the chart each second
+	                    // Open a socket connection
 	                    var series = this.series[0];
 		                  var socket = io.connect('http://localhost');
 						  socket.on('chart', function (data) {
@@ -53,6 +53,7 @@
 	                        var x = (new Date()).getTime(), // current time
 	                        y = data;
 	                        series.addPoint([x,y], true, true);
+
 						  });
 	                }
 	            }
@@ -65,6 +66,7 @@
 
 	        series : [{
 	            name : 'Random data',
+	            hasCustomFlag: true,
 	            data : (function() {
 	                // generate an array of random data
 	                var data = [], time = (new Date()).getTime(), i;

@@ -93,15 +93,17 @@
    	  tweetResult = {
 	   	  tweetText : tweetData.text,
 	   	  sentimentResult: sentimentResult,
-	   	  time: tweetData.created_at
+	   	  time: tweetData.created_at,
+	   	  country: tweetData.place.country,
+	   	  area: tweetData.place.name
    	  }
    	  
-   	  console.log(tweetData.text)
+   	  console.log(tweetResult)
    	  
    	  callback(tweetResult);
    	  
    	  } else {
-	   	  console.log('[TWEET CONTAINED NO SENTIMENT]'+tweetData.text)
+/* 	   	  console.log('[TWEET CONTAINED NO SENTIMENT]'+tweetData.text) */
    	  }
    	  
 
@@ -137,7 +139,7 @@
       console.log("Verification failed : " + err)
   })
 /*    .stream('statuses/filter', {'track':'FTSE' }, */
-   .stream('statuses/filter', {'locations': '9,2,49,61'},
+   .stream('statuses/filter', {'locations': '-6.547852,49.21042,0.571289,57.527622'},
     function (stream) {
 	  stream.on('data', function (data) { 
 	  
@@ -156,7 +158,6 @@ app.get('/hashtag', function(req, res){
     tweetData : tweetData
   });
 })
-
 
 server.listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));

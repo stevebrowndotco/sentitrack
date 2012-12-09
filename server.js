@@ -15,6 +15,7 @@
  , url = require('url')
  , cons = require('consolidate')
  , tweetData = {}
+ , tweetArray = []
 
  var app = express();
  
@@ -46,9 +47,7 @@
    */
 
    app.get('/', routes.index);
-   
-
-   
+      
    var results;
    
    // This function analyses a string for words and compares them against the anew dataset
@@ -93,12 +92,12 @@
    	  tweetResult = {
 	   	  tweetText : tweetData.text,
 	   	  sentimentResult: sentimentResult,
-	   	  time: tweetData.created_at,
-	   	  country: tweetData.place.country,
-	   	  area: tweetData.place.name
+/* 	   	  time: tweetData.created_at, */
+/* 	   	  country: tweetData.place.country, */
+/* 	   	  area: tweetData.place.name */
    	  }
    	  
-   	  console.log(tweetResult)
+/*    	  console.log(tweetResult) */
    	  
    	  callback(tweetResult);
    	  
@@ -137,20 +136,21 @@
     console.log("Verifying Credentials...");
     if(err)
       console.log("Verification failed : " + err)
-  })
-/*    .stream('statuses/filter', {'track':'FTSE' }, */
-   .stream('statuses/filter', {'locations': '-6.547852,49.21042,0.571289,57.527622'},
-    function (stream) {
-	  stream.on('data', function (data) { 
-	  
-	   	var anew = getSentiment(data,'valence_mean', function(tweetData){
-		   	socket.emit('chart', tweetData.sentimentResult );	
-	   	});
-	   	
-	  });
-    });
-    });
-/*  }); */
+    })
+    
+	   .stream('statuses/filter', {'track': 'apple, ipad, ipod, steve jobs, mac, macbook'},
+/* 	   .stream('statuses/sample', */
+	    function (stream) {
+	
+		  stream.on('data', function (data) {
+		  	tweetArray.push(data);
+		  });
+		  
+			  setInterval(function() { buildTweets(socket) }, 30000); //every 30 seconds
+		  		  
+	    });
+	    
+	});
 
 app.get('/hashtag', function(req, res){
   res.render('hashtag', {
@@ -164,5 +164,50 @@ server.listen(app.get('port'), function(){
 });
 
 
+var averageSentiment = [];
+var total = 0;
+var tweetObject = [];
 
+function buildTweets(socket) {
+
+	var i =0;
+
+	for(; tweetArray.length > 0 && i!=tweetArray.length; i++) { 
+
+			getSentiment(tweetArray[i],'valence_mean', function(tweetData) {
+				
+				if (!isNaN(tweetData.sentimentResult) && tweetData.sentimentResult > 0) {
+				
+					averageSentiment.push(tweetData.sentimentResult);
+					total += tweetData.sentimentResult;
+					tweetObject.push(tweetData);
+					
+				}
+				
+
+		    });
+		    
+
+		    
+	}
+
+    if(i == (tweetArray.length) && !isNaN(total) && total > 0) {
+    
+    	console.log('============================================') //Lets clearly debug
+    	
+	    socket.emit('chart', (total / averageSentiment.length) );	
+	    
+	    socket.emit('tweetData', tweetObject);
+	    
+    	console.log(total / averageSentiment.length );
+    	averageSentiment.length = 0;
+    	total = 0;
+    	tweetObject.length = 0;
+
+	}
+
+	//Empty the Array for next time
+	tweetArray.length = 0;
+
+}
 

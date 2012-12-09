@@ -16,7 +16,10 @@
         
         <div id="container"></div>
         
+        <div id="tweetTicker" style=""><ul></ul></div>
+        
         <link rel="stylesheet" href="/assets/css/framework.css">
+ 
         <script src="/assets/js/libs/jquery-1.7.2.js"></script>
         <script src="/assets/js/libs/highstock.js"></script>
         <script src="/assets/js/main.js"></script>
@@ -49,14 +52,27 @@
 	                    var series = this.series[0];
 		                  var socket = io.connect('http://localhost');
 						  socket.on('chart', function (data) {
-						  	console.log('data loaded ' + data);
 	                        var x = (new Date()).getTime(), // current time
 	                        y = data;
 	                        series.addPoint([x,y], true, true);
 
 						  });
+						  
+						  socket.on('tweetData', function(data){
+						  
+						  $('#tweetTicker ul').empty();
+						  			  
+							  $.each(data, function(count, value) {
+								  
+								  $('#tweetTicker ul').append('<li class="ellipsis"><div class="square"></div>'+value.tweetText+'</li>');
+							  })
+						  })
 	                }
 	            }
+	        },
+	        
+	        credits: {
+		      enabled: false  
 	        },
 	        
 	        rangeSelector: {

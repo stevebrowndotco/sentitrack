@@ -51,20 +51,36 @@ var database = new Database();
 // Connect to the db
 function Database() {
 
-  this.insert = function(tweetObject, callback) {
+  this.insert = function(tweetObject, now, averageSentimentResult, callback) {
 	  MongoClient.connect("mongodb://localhost:27017/storedTweets", function(err, db) {
+	  if(err) { return console.dir(err); }
+	  
+/* 	  console.log(tweetObject); */
+	  var collection = db.collection('tweetData');
+	  
+	  collection.insert({'tweetGroup' : tweetObject, time: now, 'averageSentiment' : averageSentimentResult}, function(err){
+		  if(err) { console.log(err) }
+	  });
+	  
+	  callback(collection);
+	  
+	  });
+	  
+
+  }
+  
+  this.retrieve = function(callback) {
+  
+  	  MongoClient.connect("mongodb://localhost:27017/storedTweets", function(err, db) {
 	  if(err) { return console.dir(err); }
 	  
 	  var collection = db.collection('tweetData');
 	  
-	  collection.insert(tweetObject, function(err){
-		  if(err) { console.log(err) }
-	  });
+	  callback(collection);
 	  
 	  });
 	  
-	  callback();
-  } 
+  }
 
  } 
 
@@ -81,12 +97,17 @@ function Database() {
    
    // This function analyses a string for words and compares them against the anew dataset
    function getSentiment(tweetData, type, fileData, callback) {
+   
+   
   
    var tweetResult = {};
    
    //Separate words in string to array
    
-   var stringArray = tweetData.text.split(" ");
+   if(tweetData) {
+	   var stringArray = tweetData.text.split(" ");
+   }
+
    var sentimentResult;
    
    // For each word in string, compare with ANEW Dataset
@@ -117,7 +138,7 @@ function Database() {
    	  tweetResult = {
 	   	  tweetText : tweetData.text,
 	   	  sentimentResult: sentimentResult,
-/* 	   	  time: tweetData.created_at, */
+	   	  time: tweetData.created_at,
 /* 	   	  country: tweetData.place.country, */
 /* 	   	  area: tweetData.place.name */
    	  }
@@ -130,11 +151,6 @@ function Database() {
 /* 	   	  console.log('[TWEET CONTAINED NO SENTIMENT]'+tweetData.text) */
    	  }
    	  
-
-   	
-
-	
-
    }
 
 
@@ -152,8 +168,18 @@ function Database() {
     access_token_secret: 'zOq88sWdJ0NNJawetp8xGlcDSO9gnjlLNcLTIbY'
   });
   
-/*    io.sockets.on('connection', function (socket) { */
-
+   io.sockets.on('connection', function (socket) {
+   
+   database.retrieve(function(collection){
+   
+   		var stream = collection.find().streamRecords();
+   		
+   		stream.on("data", function(item) {
+			socket.emit('chart', item); 
+		});
+	  
+   })
+   
    twit
    .verifyCredentials(function (err, data) {
     console.log("Verifying Credentials...");
@@ -179,15 +205,15 @@ function Database() {
 			     	  return console.log(fileDataErr); 
 			      }
 		  
-			  setInterval(function() { buildTweets(/* socket,  */fileData) }, 1000); //every 30 seconds
+			  setInterval(function() { buildTweets(socket, fileData) }, 10000); //every 30 seconds
 			  
 		  });
 		  		  
 	    });
 	    
-/* 	}); */
+	});
 	
-function buildTweets(/* socket,  */fileData) {
+function buildTweets(socket, fileData) {
 
 	var i =0
 	var averageSentiment = []
@@ -215,20 +241,24 @@ function buildTweets(/* socket,  */fileData) {
     
     	console.log('============================================') //Lets clearly debug
     	
-/*
-	    socket.emit('chart', (total / averageSentiment.length) );	
+	    var averageSentimentResult = total / averageSentiment.length;
 	    
-	    socket.emit('tweetData', tweetObject);
-*/
+	    var now = new Date().getTime();
 	    
-	    database.insert(tweetObject, function() {
+	    console.log(now);
+	    
+	    database.insert(tweetObject, now, averageSentimentResult, function(collection) {
 	        	console.log( (total / averageSentiment.length)  );
-/*
-	        	averageSentiment.length = 0;
-	        	total = 0;
-	        	tweetObject.length = 0;
-*/
+  	
+	        	var stream = collection.find().sort( { _id : -1 } ).limit(1).streamRecords();
+	        	
+				stream.on("data", function(item) {
+					socket.emit('chart', item); 
+				});
+
+
 	    });
+	    
 	    
 
 	}

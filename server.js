@@ -240,10 +240,7 @@ function buildTweets(fileData) {
                 
                 stream.on("data", function(item) {
                 
-                io.sockets.on('connection', function (socket) { 
-/*                     socket.emit('chart', item);  */
-                        console.log('there is a connection')
-                });
+
 
 
                 });

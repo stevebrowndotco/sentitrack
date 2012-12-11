@@ -52,7 +52,7 @@
 	                    var series = this.series[0];
 		                  var socket = io.connect('http://localhost');
 						  socket.on('chart', function (data) {
-/* 						  	console.log(parseFloat(data.averageSentiment)+' '+ data.time); */
+						  	console.log(parseFloat(data.averageSentiment)+' '+ data.time);
 	                        var x = data.time,
 	                        y = data.averageSentiment;
 	                        series.addPoint([x,y], true, true);

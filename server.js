@@ -1,4 +1,3 @@
-
 /**
  * Module dependencies.
  Added
@@ -18,6 +17,12 @@ var express = require('express')
 var tweetArray = [];
 var tweetData = {};
 
+var twit = new ntwitter({
+    consumer_key: '2BW4cCluZb9PwuUUYgnQ',
+    consumer_secret: 'esRGIujOnvSVGW9QZPKLLMbq1CiEJGR1UMvqft5JIk',
+    access_token_key: '21443484-jUiNRYTNPfVCWMFoLp2drlzzpZpQ1WSAbQOBpQpeQ',
+    access_token_secret: 'zOq88sWdJ0NNJawetp8xGlcDSO9gnjlLNcLTIbY'
+});
 
 var app = express();
  
@@ -47,7 +52,7 @@ app.configure(function(){
 
 var MongoClient = require('mongodb').MongoClient;
 var database = new Database();
-var socketHandler = new SocketHandler();
+/* var socketHandler = new SocketHandler(); */
 
 
 function init() {
@@ -59,46 +64,34 @@ function init() {
    * https://github.com/drouillard/sample-ntwitter
    * NOTE: In a real application do not embedd your keys into the source code
    */
-   var twit = new ntwitter({
-    consumer_key: '2BW4cCluZb9PwuUUYgnQ',
-    consumer_secret: 'esRGIujOnvSVGW9QZPKLLMbq1CiEJGR1UMvqft5JIk',
-    access_token_key: '21443484-jUiNRYTNPfVCWMFoLp2drlzzpZpQ1WSAbQOBpQpeQ',
-    access_token_secret: 'zOq88sWdJ0NNJawetp8xGlcDSO9gnjlLNcLTIbY'
-  });
-  
-   database.retrieve(function(collection){
-      
-   })
-   
+
    twit
    .verifyCredentials(function (err, data) {
     console.log("Verifying Credentials...");
     if(err) {
        console.log("Verification failed : " + err)
-    }
-
-    })
-    
-    .stream('statuses/filter', {'locations': '-6.547852,49.21042,0.571289,57.527622'},
-    function (stream) {
-      console.log('Connected to Stream API!');
-      
-      stream.on('data', function (data) {
-        tweetArray.push(data);
-      });
-          
-      fs.readFile('anew.json', 'utf8', function (fileDataErr,fileData) {
-      
-              if (fileDataErr) {
-                  return console.log(fileDataErr); 
-              }
-      
-          setInterval(function() { buildTweets(fileData) }, 10000); //every 30 seconds
-          
-      });
+       } else {
+            twit.stream('statuses/filter', {'locations': '-6.547852,49.21042,0.571289,57.527622'},
+            function (stream) {
+              console.log('Connected to Stream API!');
+              stream.on('data', function (data) {
+                tweetArray.push(data);
+              });
+                  
+              fs.readFile('anew.json', 'utf8', function (fileDataErr,fileData) {
               
-    });
-           
+                      if (fileDataErr) {
+                          return console.log(fileDataErr); 
+                      }
+              
+                  setInterval(function() { buildTweets(fileData) }, 10000); //every 30 seconds
+                  
+              });
+                      
+            });
+       }
+    })
+       
 }
    
 // Connect to the db
@@ -137,17 +130,19 @@ function Database() {
 
  }
  
+/*
  function SocketHandler() {
     
     this.emit = function(item) {
     
         console.log('sending to page');
-        io.sockets.on('connection', function (socket) { //This needs to be always on! HAVE THE SOCKETS ON EVENT LIKE AN INIT!!
+
             socket.emit('chart', item); 
-        });
+
     }
 
  }
+*/
 
   /**
    * Above this line are Express Defaults.
@@ -236,13 +231,21 @@ function buildTweets(fileData) {
         
         console.log(now);
         
+ 
+        
         database.insert(tweetObject, now, averageSentimentResult, function(collection) {
                 console.log( (total / averageSentiment.length)  );
     
                 var stream = collection.find().sort( { _id : -1 } ).limit(1).streamRecords();
                 
                 stream.on("data", function(item) {
-                    socketHandler.emit(item);
+                
+                io.sockets.on('connection', function (socket) { 
+/*                     socket.emit('chart', item);  */
+                        console.log('there is a connection')
+                });
+
+
                 });
 
         });
@@ -256,13 +259,14 @@ function buildTweets(fileData) {
 
 app.get('/hashtag', function(req, res){
   res.render('hashtag', {
-    title: 'Welcome to Stock Market Predictor'
+
   });
 })
 
 server.listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
 });
+
 
 init();
 

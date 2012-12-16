@@ -20,7 +20,7 @@ var twit = new ntwitter({
 var app = express();
 
 var server = http.createServer(app);
-var io = require('socket.io').listen(server, { log:false });
+var io = require('socket.io').listen(server, { log:true });
 
 app.configure(function () {
     app.set('port', process.env.PORT || 3000);

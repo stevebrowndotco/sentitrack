@@ -222,9 +222,9 @@ function buildTweets(fileData) {
 
         console.log(tweetObject.length + ' tweets found')
 
-        console.log('SORTED!', filterUnicode(tweetObject));
+        var tweetEncode = filterUnicode(tweetObject);
 
-        database.insert(tweetObject, now, averageSentimentResult);
+        database.insert(tweetEncode, now, averageSentimentResult);
 
     }
 

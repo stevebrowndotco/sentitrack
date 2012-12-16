@@ -1,108 +1,137 @@
 <!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title></title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width">
-        <script src="/socket.io/socket.io.js"></script>
-    </head>
-    <body>
-        <h1>SentiStock</h1>
-        
-        <div id="container"></div>
-        
-        <div id="tweetTicker" style=""><ul></ul></div>
-        
-        <link rel="stylesheet" href="/assets/css/framework.css">
- 
-        <script src="/assets/js/libs/jquery-1.7.2.js"></script>
-        <script src="/assets/js/libs/highstock.js"></script>
-        <script src="/assets/js/main.js"></script>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Sentiment Tracker</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+<h1>Sentiment Tracker</h1>
+<div id="container"></div>
+
+<div id="tweetTicker" style="">
+    <ul></ul>
+</div>
+
+<link rel="stylesheet" href="/assets/css/framework.css">
+
+<script src="/assets/js/libs/jquery-1.7.2.js"></script>
+<script src="/assets/js/libs/highstock.js"></script>
+<script src="/assets/js/main.js"></script>
 
 
-        <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
-        <script>
-            var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
-            (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
-            g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
-            s.parentNode.insertBefore(g,s)}(document,'script'));
-        </script>
-        
-		<script> 
-		$(function() {
-	    
-	    Highcharts.setOptions({
-	        global : {
-	            useUTC : false
-	        }
-	    });
-	    
-	    // Create the chart
-	    window.chart = new Highcharts.StockChart({
-	        chart : {
-	            renderTo : 'container',
-	            events : {
-	                load : function() {
-	                    // Open a socket connection
-	                    var series = this.series[0];
-		                  var socket = io.connect('http://localhost');
-						  socket.on('chart', function (data) {
-						  	console.log(parseFloat(data.averageSentiment)+' '+ data.time);
-	                        var x = data.time,
-	                        y = data.averageSentiment;
-	                        series.addPoint([x,y], true, true);
+<!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+<script>
+    var _gaq = [
+        ['_setAccount', 'UA-XXXXX-X'],
+        ['_trackPageview']
+    ];
+    (function (d, t) {
+        var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+        g.src = ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js';
+        s.parentNode.insertBefore(g, s)
+    }(document, 'script'));
+</script>
 
-						  });
-						  
-						  socket.on('tweetData', function(data){
-						  
-						  $('#tweetTicker ul').empty();
-						  			  
-							  $.each(data, function(count, value) {
-								  
-								  $('#tweetTicker ul').append('<li class="ellipsis"><div class="square"></div>'+value.tweetText+'</li>');
-							  })
-						  })
-	                }
-	            }
-	        },
-	        
-	        credits: {
-		      enabled: false  
-	        },
-	        
-	        rangeSelector: {
-		        selected: 0
-	        },
+<script>
 
-	        series : [{
-	            name : 'Random data',
-	            hasCustomFlag: true,
-	            data : (function() {
-	                // generate an array of random data
-	                var data = [], time = (new Date()).getTime(), i;
-	
-	                for( i = -999; i <= 0; i++) {
-	                	console.log(i);
-	                    data.push([
-	                        time + i * 100
-	                    ]);
-	                }
-	                return data;
-	            })()
-	        }]
-	    });
-	
-	});
-		
+    $(function () {
 
+        var socket = io.connect('http://localhost');
 
-        </script> 
-        
-    </body>
+        var chart;
+
+        socket.on('fullData', function (data) {
+
+            var dataArray = [];
+
+            $.each(data, function (count, result) {
+
+                dataArray.push([result.time, result.averageSentiment]);
+
+                if (count == ( data.length - 1 ) && count > 1) {
+
+                    $(document).trigger('loadChart', [dataArray]);
+
+                }
+
+            });
+
+        });
+
+        socket.on('chart', function(data){
+            console.log(data.tweetGroup.length);
+        })
+
+        socket.on('fullData', function(data){
+            console.log(data);
+        })
+
+        $(document).bind('loadChart', function (e, result) {
+
+            // Create the chart
+            chart = new Highcharts.StockChart({
+                chart:{
+                    renderTo:'container',
+                    backgroundColor: 'transparent',
+                    events:{
+                        load:function () {
+
+                            // Open a socket connection
+                            var series = this.series[0];
+
+                            console.log('LOADED');
+
+                            socket.on('chart', function (data) {
+
+                                console.log('CHART connected');
+
+                                var x = data.time, y = data.averageSentiment;
+                                series.addPoint([x, y], true, true);
+
+                                $('#tweetTicker ul').empty();
+
+                                $.each(data.tweetGroup, function (count, value) {
+
+                                    $('#tweetTicker ul').append('<li class="ellipsis"><div class="square"></div>' + value.tweetText + '</li>');
+
+                                });
+
+                            });
+
+                        }
+
+                    }
+                },
+
+                credits:{
+                    enabled:false
+                },
+
+                series:[
+                    {
+                        name:'Random data',
+                        hasCustomFlag:true,
+                        data:result
+                    }
+                ]
+            });
+        });
+
+    });
+
+</script>
+
+</body>
 </html>

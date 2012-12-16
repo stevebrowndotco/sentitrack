@@ -18,6 +18,19 @@ Twitter Bootstrap, HTML5 BoilerPlate and 3L code
 /* CSS3 Supported Loader */
 /* =Screen Size
 ==================================*/
+body {
+  background: #ece9e9 -webkit-gradient(linear, 0% 0%, 0% 100%, from(#ffffff), to(#e6e3e3)) no-repeat;
+}
+h1 {
+  text-align: center;
+}
+#container {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  bottom: 50px;
+}
 #tweetTicker li {
   float: left;
   color: #fff;
@@ -25,6 +38,9 @@ Twitter Bootstrap, HTML5 BoilerPlate and 3L code
 #tweetTicker {
   background: black;
   width: 100%;
+  height: 50px;
+  position: fixed;
+  bottom: 0;
   -webkit-marquee-direction: left;
   -webkit-marquee-increment: medium;
   -webkit-marquee-repetition: 10;

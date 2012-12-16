@@ -1,3 +1,9 @@
+body {
+  background: red;
+}
+#container {
+  height: 100%;
+}
 #tweetTicker li {
   float: left;
   color: #fff;

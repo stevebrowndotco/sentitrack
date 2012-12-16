@@ -58,7 +58,7 @@
 
             $.each(data, function (count, result) {
 
-                dataArray.push([result.time, result.averageSentiment]);
+                dataArray.push([result.time, result.averageSentiment, result.tweetGroup]);
 
                 if (count == ( data.length - 1 ) && count > 1) {
 
@@ -85,6 +85,11 @@
                 chart:{
                     renderTo:'container',
                     backgroundColor: 'transparent',
+                    style: {
+                        fontFamily: "'helvetica neue', sans-serif",
+                        fontSize: '14px'
+                    },
+                    type: 'spline',
                     events:{
                         load:function () {
 
@@ -98,7 +103,7 @@
                                 console.log('CHART connected');
 
                                 var x = data.time, y = data.averageSentiment;
-                                series.addPoint([x, y], true, true);
+                                series.addPoint([x, y, data.tweetGroup], true, true);
 
                                 $('#tweetTicker ul').empty();
 
@@ -115,19 +120,76 @@
                     }
                 },
 
+                yAxis: {
+                    gridLineColor: '#eee'
+                },
+
+                xAxis: {
+                    gridLineWidth: 1,
+                    gridLineColor: '#eee'
+                },
+
                 credits:{
                     enabled:false
                 },
 
+                rangeSelector: {
+                    selected:0
+                },
+
                 series:[
                     {
-                        name:'Random data',
-                        hasCustomFlag:true,
+                        name:'Valence',
                         data:result
                     }
-                ]
+                ],
+
+                plotOptions: {
+
+                    spline: {
+
+                        allowPointSelect: true,
+
+                        events: {
+
+                            click: function(event) {
+
+                                console.log(event);
+
+                                popup(event);
+
+                            }
+
+                        }
+
+                    }
+
+
+
+                }
             });
         });
+
+        function popup(event) {
+
+            console.log(event);
+
+            if( $('#mask').length > 0 ) {
+                $('#mask').remove();
+            }
+
+            $('body').prepend('<div id="mask"><div id="popup"><h2>Tweet Data</h2><h3>Average Sentiment: '+event.point.config[1]+'</h3><ul></ul></div></div>');
+
+            $.each(event.point.config[2], function(count,value) {
+
+                    console.log(event.point.config[2][count]);
+                $('#popup ul').append('<li>'+event.point.config[2][count].tweetText+' <strong>'+event.point.config[2][count].sentimentResult+'</strong></li>');
+            });
+        }
+
+        $(document).on('click', '#mask', function(){
+            $('#mask').remove();
+        })
 
     });
 

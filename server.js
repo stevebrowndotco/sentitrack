@@ -80,7 +80,7 @@ function init() {
 
                             setInterval(function () {
                                 buildTweets(fileData)
-                            }, 30000); //every 30 seconds
+                            }, 5000); //every 30 seconds
 
                         });
 
@@ -95,7 +95,6 @@ function Database() {
 
     this.insert = function (tweetObject, now, averageSentimentResult, callback) {
 
-
         MongoClient.connect("mongodb://localhost:27017/storedTweets", function (err, db) {
 
             if (err) {
@@ -103,6 +102,7 @@ function Database() {
             }
 
             var collection = db.collection('tweetData');
+
             collection.insert({'tweetGroup':tweetObject, time:now, 'averageSentiment':averageSentimentResult}, {capped:true, size:100000}, function (err) {
                 if (err) {
                     console.log(err)
@@ -110,6 +110,8 @@ function Database() {
             });
 
             console.log('Saved '+ tweetObject.length + ' tweets to the database');
+
+            db.close();
 
         });
 
@@ -126,6 +128,8 @@ function Database() {
             var collection = db.collection('tweetData');
 
             callback(collection);
+
+            db.close();
 
         });
 
@@ -231,9 +235,11 @@ app.get('/hashtag', function (req, res) {
     res.render('hashtag');
 })
 
-io.sockets.on('connection', function(socket){
+io.sockets.on('connection', function(socket) {
 
     console.log(socket.id+' connected');
+
+    db.close(); //Close if client is reconnected to avoid crashes!
 
     database.retrieve(function(collection){
 
@@ -276,6 +282,8 @@ io.sockets.on('connection', function(socket){
             });
         });
 
+//        db.close();
+
     });
 
     socket.on('reconnect', function(socket){
@@ -290,10 +298,7 @@ io.sockets.on('connection', function(socket){
 
     })
 
-
 })
-
-
 
 server.listen(app.get('port'), function () {
     console.log("Express server listening on port " + app.get('port'));

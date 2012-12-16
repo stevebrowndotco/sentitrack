@@ -1,10 +1,17 @@
 body {
-  background: #ECE9E9 -webkit-gradient(linear, 0% 0%, 0% 100%, from(white), to(#e6e3e3)) no-repeat;
+ .gradient(#fff, #f4f1f1);
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
 
 }
 
 h1 {
   text-align: center;
+  font-weight: 900;
+  letter-spacing: -1px;
 }
 #container {
   position: fixed;
@@ -17,10 +24,13 @@ h1 {
 #tweetTicker li {
 	float: left;
 	color: #fff;
+    list-style-type: none;
 }
 
 #tweetTicker {
 	background: black;
+    .gradient(#333,#000);
+    .box-shadow(0 0 20px black inset);
 	width: 100%;
 	height: 50px;
     position: fixed;
@@ -39,13 +49,56 @@ h1 {
 		width: 10px;
 		height: 10px;
 		background: blue;
-		margin: 0 0 20px 0;
+		margin: 3px 20px 20px 20px;
 		float: left;		
 	}
 }
 
 #tweetTicker ul {
 	float: left;
+    margin: 16px 0 0 0;
 	white-space: nowrap;
-/* 	padding: 0px 350px; */
+
+}
+
+#mask {
+  position: fixed;
+  z-index: 9;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.8);
+}
+
+#popup {
+  position: fixed;
+  top: 50%;
+  height: 300px;
+  margin-top: -200px;
+  left: 50%;
+  z-index: 10;
+  width: 300px;
+  .gradient(#fff,#ccc);
+  margin-left: -150px;
+  z-index: 99;
+  padding: 20px;
+  border-radius: 3px;
+  box-shadow: 0 3px 21px rgba(0, 0, 0, 0.4);
+
+  h2 {
+    margin-top: 0;
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    overflow: auto;
+    height: 209px;
+
+    li {
+      margin: 0 0 10px 0;
+    }
+  }
 }

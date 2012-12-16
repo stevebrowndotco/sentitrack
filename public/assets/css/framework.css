@@ -19,10 +19,22 @@ Twitter Bootstrap, HTML5 BoilerPlate and 3L code
 /* =Screen Size
 ==================================*/
 body {
-  background: #ece9e9 -webkit-gradient(linear, 0% 0%, 0% 100%, from(#ffffff), to(#e6e3e3)) no-repeat;
+  background: #ffffff;
+  background-image: -moz-linear-gradient(top, #ffffff 0%, #f4f1f1 100%);
+  background-image: -webkit-linear-gradient(top, #ffffff 0%, #f4f1f1 100%);
+  background-image: -o-linear-gradient(top, #ffffff 0%, #f4f1f1 100%);
+  background-image: linear-gradient(to bottom, #ffffff 0%, #f4f1f1 100%);
+  filter: progid:dximagetransform.microsoft.gradient(startColorstr='@color1', endColorstr='@color2', GradientType=0);
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 h1 {
   text-align: center;
+  font-weight: 900;
+  letter-spacing: -1px;
 }
 #container {
   position: fixed;
@@ -34,9 +46,22 @@ h1 {
 #tweetTicker li {
   float: left;
   color: #fff;
+  list-style-type: none;
 }
 #tweetTicker {
   background: black;
+  background: #333333;
+  background-image: -moz-linear-gradient(top, #333333 0%, #000000 100%);
+  background-image: -webkit-linear-gradient(top, #333333 0%, #000000 100%);
+  background-image: -o-linear-gradient(top, #333333 0%, #000000 100%);
+  background-image: linear-gradient(to bottom, #333333 0%, #000000 100%);
+  filter: progid:dximagetransform.microsoft.gradient(startColorstr='@color1', endColorstr='@color2', GradientType=0);
+  -webkit-box-shadow: 0 0 20px #000000 inset;
+  -moz-box-shadow: 0 0 20px #000000 inset;
+  box-shadow: 0 0 20px #000000 inset;
+  -webkit-box-shadow: 0 0 20px #000000 inset;
+  -moz-box-shadow: 0 0 20px #000000 inset;
+  box-shadow: 0 0 20px #000000 inset;
   width: 100%;
   height: 50px;
   position: fixed;
@@ -55,14 +80,55 @@ h1 {
   width: 10px;
   height: 10px;
   background: blue;
-  margin: 0 0 20px 0;
+  margin: 3px 20px 20px 20px;
   float: left;
 }
 #tweetTicker ul {
   float: left;
+  margin: 16px 0 0 0;
   white-space: nowrap;
-  /* 	padding: 0px 350px; */
-
+}
+#mask {
+  position: fixed;
+  z-index: 9;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+}
+#popup {
+  position: fixed;
+  top: 50%;
+  height: 300px;
+  margin-top: -200px;
+  left: 50%;
+  z-index: 10;
+  width: 300px;
+  background: #ffffff;
+  background-image: -moz-linear-gradient(top, #ffffff 0%, #cccccc 100%);
+  background-image: -webkit-linear-gradient(top, #ffffff 0%, #cccccc 100%);
+  background-image: -o-linear-gradient(top, #ffffff 0%, #cccccc 100%);
+  background-image: linear-gradient(to bottom, #ffffff 0%, #cccccc 100%);
+  filter: progid:dximagetransform.microsoft.gradient(startColorstr='@color1', endColorstr='@color2', GradientType=0);
+  margin-left: -150px;
+  z-index: 99;
+  padding: 20px;
+  border-radius: 3px;
+  box-shadow: 0 3px 21px rgba(0, 0, 0, 0.4);
+}
+#popup h2 {
+  margin-top: 0;
+}
+#popup ul {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+  overflow: auto;
+  height: 209px;
+}
+#popup ul li {
+  margin: 0 0 10px 0;
 }
 /* Core Styling */
 /* HTML5 ✰ Boilerplate

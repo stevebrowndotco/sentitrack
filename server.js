@@ -69,7 +69,7 @@ function init() {
                     function (stream) {
                         console.log('Connected to Stream API!');
                         stream.on('data', function (data) {
-                            tweetArray.push(data);
+                            tweetArray.push(filterUnicode(data));
                         });
 
                         fs.readFile('anew.json', 'utf8', function (fileDataErr, fileData) {
@@ -246,7 +246,7 @@ io.sockets.on('connection', function(socket) {
         console.log(socket.id + ' Requesting initial data');
 
         collection.find().toArray(function(err, results){
-            socket.emit('fullData', strdecode(results));
+            socket.emit('fullData', results);
 
         });
 
@@ -275,7 +275,7 @@ io.sockets.on('connection', function(socket) {
                     cursor.nextObject(function(err, message) {
                         if (err) throw err;
                           console.log('sending '+ message.tweetGroup.length +' to '+socket.id);
-                          socket.emit('chart', strdecode(message));
+                          socket.emit('chart', message);
                         next();
                     });
                 })();
@@ -303,12 +303,16 @@ server.listen(app.get('port'), function () {
     console.log("Express server listening on port " + app.get('port'));
 });
 
-function strencode( data ) {
-    return unescape( encodeURIComponent( JSON.stringify( data ) ) );
-}
+var escapable = /[\x00-\x1f\ud800-\udfff\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufff0-\uffff]/g;
 
-function strdecode( data ) {
-    return JSON.parse( decodeURIComponent( escape ( data ) ) );
+function filterUnicode(quoted){
+
+    escapable.lastIndex = 0;
+    if( !escapable.test(quoted)) return quoted;
+
+    return quoted.replace( escapable, function(a){
+        return '';
+    });
 }
 
 init();

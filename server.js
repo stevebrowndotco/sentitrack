@@ -20,7 +20,7 @@ var twit = new ntwitter({
 var app = express();
 
 var server = http.createServer(app);
-var io = require('socket.io').listen(server, { log:true });
+var io = require('socket.io').listen(server, { log:false });
 
 app.configure(function () {
     app.set('port', process.env.PORT || 3000);
@@ -282,7 +282,6 @@ io.sockets.on('connection', function(socket) {
             });
         });
 
-//        db.close();
 
     });
 
@@ -303,5 +302,13 @@ io.sockets.on('connection', function(socket) {
 server.listen(app.get('port'), function () {
     console.log("Express server listening on port " + app.get('port'));
 });
+
+function strencode( data ) {
+    return unescape( encodeURIComponent( JSON.stringify( data ) ) );
+}
+
+function strdecode( data ) {
+    return JSON.parse( decodeURIComponent( escape ( data ) ) );
+}
 
 init();

@@ -223,7 +223,7 @@ function buildTweets(fileData) {
         console.log(tweetObject.length + ' tweets found')
 
 
-        database.insert(tweetEncode, now, averageSentimentResult);
+        database.insert(tweetObject, now, averageSentimentResult);
 
     }
 

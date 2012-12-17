@@ -224,6 +224,9 @@ function buildTweets(fileData) {
 
         var tweetEncode = filterUnicode(tweetObject);
 
+        console.log('without', tweetObject);
+        console.log('with', tweetEncode);
+
         database.insert(tweetEncode, now, averageSentimentResult);
 
     }
@@ -248,10 +251,7 @@ io.sockets.on('connection', function(socket) {
         console.log(socket.id + ' Requesting initial data');
 
         collection.find().toArray(function(err, results){
-            socket.emit('fullData', filterUnicode(results));
-
-            console.log('results without filter',results);
-            console.log('results with filter',filterUnicode(results));
+            socket.emit('fullData', results);
 
         });
 

@@ -248,7 +248,7 @@ io.sockets.on('connection', function(socket) {
         console.log(socket.id + ' Requesting initial data');
 
         collection.find().toArray(function(err, results){
-            socket.emit('fullData', results);
+            socket.emit('fullData', filterUnicode(results));
 
         });
 

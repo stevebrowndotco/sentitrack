@@ -28,7 +28,7 @@ app.configure(function () {
     app.engine('html', cons.mustache);
     app.set('view engine', 'html');
     app.set('views', __dirname + '/views');
-    app.use(express.favicon());
+//    app.use(express.favicon());
     app.use(express.logger('dev'));
     app.use(express.bodyParser());
     app.use(express.methodOverride());

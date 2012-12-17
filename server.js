@@ -101,7 +101,7 @@ function Database() {
                 return console.dir(err);
             }
 
-            var collection = db.createCollection('tweetData2');
+            var collection = db.collection('tweetData2');
 
             collection.insert({'tweetGroup':tweetObject, time:now, 'averageSentiment':averageSentimentResult}, {capped:true, size:99999999}, function (err) {
                 if (err) {

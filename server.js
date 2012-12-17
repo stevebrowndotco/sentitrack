@@ -69,7 +69,7 @@ function init() {
                     function (stream) {
                         console.log('Connected to Stream API!');
                         stream.on('data', function (data) {
-                            tweetArray.push(data);
+                            tweetArray.push(filterUnicode(data));
                         });
 
                         fs.readFile('anew.json', 'utf8', function (fileDataErr, fileData) {

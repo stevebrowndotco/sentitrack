@@ -69,7 +69,7 @@ function init() {
                     function (stream) {
                         console.log('Connected to Stream API!');
                         stream.on('data', function (data) {
-                            tweetArray.push(strdecode(data));
+                            tweetArray.push(data);
                         });
 
                         fs.readFile('anew.json', 'utf8', function (fileDataErr, fileData) {
@@ -222,10 +222,6 @@ function buildTweets(fileData) {
 
         console.log(tweetObject.length + ' tweets found')
 
-        var tweetEncode = tweetObject;
-
-        console.log('without', tweetObject);
-        console.log('with', tweetEncode);
 
         database.insert(tweetEncode, now, averageSentimentResult);
 
@@ -251,7 +247,7 @@ io.sockets.on('connection', function(socket) {
         console.log(socket.id + ' Requesting initial data');
 
         collection.find().toArray(function(err, results){
-            socket.emit('fullData', results);
+            socket.emit('fullData', strencode(results));
 
         });
 
@@ -280,7 +276,7 @@ io.sockets.on('connection', function(socket) {
                     cursor.nextObject(function(err, message) {
                         if (err) throw err;
                           console.log('sending '+ message.tweetGroup.length +' to '+socket.id);
-                          socket.emit('chart', message);
+                          socket.emit('chart', strencode(message));
                         next();
                     });
                 })();

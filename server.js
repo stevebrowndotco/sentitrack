@@ -24,16 +24,16 @@ var io = require('socket.io').listen(server, { log:false });
 
 app.configure(function () {
     app.set('port', process.env.PORT || 3000);
-    app.set('views', __dirname + '/views');
+//    app.set('views', __dirname + '/views');
     app.engine('html', cons.mustache);
     app.set('view engine', 'html');
     app.set('views', __dirname + '/views');
 //    app.use(express.favicon());
-    app.use(express.logger('dev'));
-    app.use(express.bodyParser());
-    app.use(express.methodOverride());
-    app.use(express.cookieParser('secretsession'));
-    app.use(express.session());
+//    app.use(express.logger('dev'));
+//    app.use(express.bodyParser());
+//    app.use(express.methodOverride());
+//    app.use(express.cookieParser('secretsession'));
+//    app.use(express.session());
     app.use(app.router);
     app.use(express.static(__dirname + '/public'));
 });

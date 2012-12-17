@@ -250,6 +250,9 @@ io.sockets.on('connection', function(socket) {
         collection.find().toArray(function(err, results){
             socket.emit('fullData', filterUnicode(results));
 
+            console.log('results without filter',results);
+            console.log('results with filter',filterUnicode(results));
+
         });
 
     })

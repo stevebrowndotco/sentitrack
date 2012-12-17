@@ -56,11 +56,15 @@
 
             var dataArray = [];
 
-            $.each(data, function (count, result) {
+            var parseData = JSON.parse(data);
+
+            $.each(parseData, function (count, result) {
 
                 dataArray.push([result.time, result.averageSentiment, result.tweetGroup]);
 
-                if (count == ( data.length - 1 ) && count > 1) {
+                if (count == ( parseData.length - 1 ) && count > 1) {
+
+                    console.log(dataArray);
 
                     $(document).trigger('loadChart', [dataArray]);
 
@@ -70,13 +74,6 @@
 
         });
 
-        socket.on('chart', function(data){
-            console.log(data.tweetGroup.length);
-        })
-
-        socket.on('fullData', function(data){
-            console.log(data);
-        })
 
         $(document).bind('loadChart', function (e, result) {
 
@@ -100,14 +97,16 @@
 
                             socket.on('chart', function (data) {
 
+                                var parseData = JSON.parse(data);
+
                                 console.log('CHART connected');
 
-                                var x = data.time, y = data.averageSentiment;
-                                series.addPoint([x, y, data.tweetGroup], true, true);
+                                var x = parseData.time, y = parseData.averageSentiment;
+                                series.addPoint([x, y, parseData.tweetGroup], true, true);
 
                                 $('#tweetTicker ul').empty();
 
-                                $.each(data.tweetGroup, function (count, value) {
+                                $.each(parseData.tweetGroup, function (count, value) {
 
                                     $('#tweetTicker ul').append('<li class="ellipsis"><div class="square"></div>' + value.tweetText + '</li>');
 

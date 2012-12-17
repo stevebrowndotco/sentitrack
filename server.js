@@ -69,7 +69,7 @@ function init() {
                     function (stream) {
                         console.log('Connected to Stream API!');
                         stream.on('data', function (data) {
-                            tweetArray.push(filterUnicode(data));
+                            tweetArray.push(strencode(data));
                         });
 
                         fs.readFile('anew.json', 'utf8', function (fileDataErr, fileData) {
@@ -222,7 +222,7 @@ function buildTweets(fileData) {
 
         console.log(tweetObject.length + ' tweets found')
 
-        var tweetEncode = filterUnicode(tweetObject);
+        var tweetEncode = tweetObject;
 
         console.log('without', tweetObject);
         console.log('with', tweetEncode);
@@ -318,6 +318,14 @@ function filterUnicode(quoted){
     return quoted.replace( escapable, function(a){
         return '';
     });
+}
+
+function strencode( data ) {
+    return unescape( encodeURIComponent( JSON.stringify( data ) ) );
+}
+
+function strdecode( data ) {
+    return JSON.parse( decodeURIComponent( escape ( data ) ) );
 }
 
 init();

@@ -246,7 +246,7 @@ io.sockets.on('connection', function(socket) {
 
         console.log(socket.id + ' Requesting initial data');
 
-        collection.find().sort({$natural:-1}).limit(288).toArray(function(err, results){
+        collection.find().limit(288).toArray(function(err, results){
             socket.emit('fullData', strencode(results));
 
         });

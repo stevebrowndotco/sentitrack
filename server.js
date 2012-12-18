@@ -93,7 +93,7 @@ function init() {
 // Connect to the db
 function Database() {
 
-    this.insert = function (tweetObject, now, averageSentimentResult, callback) {
+    this.insert = function (now, averageSentimentResult, callback) {
 
         MongoClient.connect("mongodb://localhost:27017/storedTweets", function (err, db) {
 
@@ -103,7 +103,7 @@ function Database() {
 
             var collection = db.collection('tweetData3');
 
-            collection.insert({'tweetGroup':tweetObject, time:now, 'averageSentiment':averageSentimentResult}, {capped:true, size:99999999}, function (err) {
+            collection.insert({time:now, 'averageSentiment':averageSentimentResult}, {capped:true, size:99999999}, function (err) {
                 if (err) {
                     console.log(err)
                 }
@@ -223,7 +223,7 @@ function buildTweets(fileData) {
         console.log(tweetObject.length + ' tweets found')
 
 
-        database.insert(tweetObject, now, averageSentimentResult);
+        database.insert(now, averageSentimentResult);
 
     }
 

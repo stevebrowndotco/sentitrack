@@ -125,7 +125,7 @@ function Database() {
                 return console.dir(err);
             }
 
-            var collection = db.collection('tweetData2').find().limit(100);
+            var collection = db.collection('tweetData2');
 
             callback(collection);
 
@@ -246,7 +246,7 @@ io.sockets.on('connection', function(socket) {
 
         console.log(socket.id + ' Requesting initial data');
 
-        collection.find().toArray(function(err, results){
+        collection.find().limit(100).toArray(function(err, results){
             socket.emit('fullData', strencode(results));
 
         });

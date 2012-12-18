@@ -109,7 +109,7 @@ function Database() {
                 }
             });
 
-            console.log('Saved '+ tweetObject.length + ' tweets to the database');
+            console.log('Saved tweets to the database');
 
             db.close();
 
@@ -196,7 +196,6 @@ function buildTweets(fileData) {
     var i = 0
     var averageSentiment = []
     var total = 0
-    var tweetObject = []
 
     for (; tweetArray.length > 0 && i != tweetArray.length; i++) {
 
@@ -206,7 +205,6 @@ function buildTweets(fileData) {
 
                 averageSentiment.push(tweetData.sentimentResult);
                 total += tweetData.sentimentResult;
-                tweetObject.push(tweetData);
 
             }
 
@@ -220,7 +218,7 @@ function buildTweets(fileData) {
 
         var now = new Date().getTime();
 
-        console.log(tweetObject.length + ' tweets found')
+        console.log('Tweets found')
 
 
         database.insert(now, averageSentimentResult);

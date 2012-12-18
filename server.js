@@ -80,7 +80,7 @@ function init() {
 
                             setInterval(function () {
                                 buildTweets(fileData)
-                            }, 30000); //every 30 seconds
+                            }, 600000); //every 30 seconds
 
                         });
 

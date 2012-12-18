@@ -80,7 +80,7 @@ function init() {
 
                             setInterval(function () {
                                 buildTweets(fileData)
-                            }, 600000); //every 30 seconds
+                            }, 30000); //every 30 seconds
 
                         });
 
@@ -101,7 +101,7 @@ function Database() {
                 return console.dir(err);
             }
 
-            var collection = db.collection('tweetData3');
+            var collection = db.collection('tweetData2');
 
             collection.insert({'tweetGroup':tweetObject, time:now, 'averageSentiment':averageSentimentResult}, {capped:true, size:99999999}, function (err) {
                 if (err) {
@@ -125,7 +125,7 @@ function Database() {
                 return console.dir(err);
             }
 
-            var collection = db.collection('tweetData3');
+            var collection = db.collection('tweetData2');
 
             callback(collection);
 
@@ -259,7 +259,7 @@ io.sockets.on('connection', function(socket) {
         console.log('opening tweetData collection');
         if (err) throw err;
 
-        db.collection('tweetData3', function(err, collection) {
+        db.collection('tweetData2', function(err, collection) {
             if (err) throw err;
 
             var latest = collection.find({}).sort({ $natural: -1 }).limit(1);

@@ -275,7 +275,6 @@ io.sockets.on('connection', function(socket) {
                 (function next() {
                     cursor.nextObject(function(err, message) {
                         if (err) throw err;
-                          console.log('sending '+ message.tweetGroup.length +' to '+socket.id);
                           socket.emit('chart', strencode(message));
                         next();
                     });

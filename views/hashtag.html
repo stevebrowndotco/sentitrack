@@ -86,6 +86,7 @@
                         fontFamily: "'helvetica neue', sans-serif",
                         fontSize: '14px'
                     },
+                    zoomType: 'x',
                     type: 'spline',
                     events:{
                         load:function () {
@@ -113,14 +114,14 @@
                 },
 
                 yAxis: {
-                    gridLineColor: '#eee',
-                    max: 9,
-                    min: 1
+                    gridLineColor: '#1e1e1e',
+                    max: 7,
+                    min: 5
                 },
 
                 xAxis: {
                     gridLineWidth: 1,
-                    gridLineColor: '#eee'
+                    gridLineColor: '#1e1e1e'
 //                    minRange: 30 * 24 * 3600
                 },
 
@@ -129,7 +130,14 @@
                 },
 
                 rangeSelector: {
-                    selected:0
+                    selected:0,
+                    enabled: false
+                },
+
+                navigator: {
+
+                    maskFill: 'rgba(0, 0, 0, 0.8)'
+
                 },
 
                 series:[
@@ -144,6 +152,8 @@
                     spline: {
 
                         allowPointSelect: true,
+
+                        color: '#f90050',
 
                         events: {
 

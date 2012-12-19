@@ -1,5 +1,5 @@
 body {
- .gradient(#fff, #f4f1f1);
+  .gradient(#141414, #fff);
   position: fixed;
   top: 0;
   bottom: 0;
@@ -12,52 +12,56 @@ h1 {
   text-align: center;
   font-weight: 900;
   letter-spacing: -1px;
+  font-weight: 100;
+  color: #f90050;
 }
+
 #container {
   position: fixed;
   top: 60px;
   left: 0;
   right: 0;
-  bottom: 50px;
+  bottom: 30px;
 }
 
 #tweetTicker li {
-	float: left;
-	color: #fff;
-    list-style-type: none;
+  float: left;
+  color: #fff;
+  list-style-type: none;
+
 }
 
 #tweetTicker {
-	background: black;
-    .gradient(#333,#000);
-    .box-shadow(0 0 20px black inset);
-	width: 100%;
-	height: 50px;
-    position: fixed;
-    bottom: 0;
-	-webkit-marquee-direction:left;
-	-webkit-marquee-increment:medium;
-	-webkit-marquee-repetition:10;
-	-webkit-marquee-speed:normal;
-	-webkit-marquee-style:slide;
-	font-size:14px;
-	white-space: nowrap;
-	overflow:hidden;
-	overflow-x:-webkit-marquee;
-	
-	.square {
-		width: 10px;
-		height: 10px;
-		background: blue;
-		margin: 3px 20px 20px 20px;
-		float: left;		
-	}
+  background: black;
+  .gradient(#333,#000);
+  .box-shadow(0 0 20px black inset);
+  width: 100%;
+  height: 58px;
+  position: fixed;
+  bottom: 0;
+  -webkit-marquee-direction: left;
+  -webkit-marquee-increment: medium;
+  -webkit-marquee-repetition: 10;
+  -webkit-marquee-speed: normal;
+  -webkit-marquee-style: slide;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  overflow-x: -webkit-marquee;
+
+  .square {
+    width: 10px;
+    height: 10px;
+    background: blue;
+    margin: 3px 20px 20px 20px;
+    float: left;
+  }
 }
 
 #tweetTicker ul {
-	float: left;
-    margin: 16px 0 0 0;
-	white-space: nowrap;
+  float: left;
+  margin: 16px 0 0 0;
+  white-space: nowrap;
 
 }
 
@@ -68,7 +72,7 @@ h1 {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0,0,0,0.8);
+  background: rgba(0, 0, 0, 0.8);
 }
 
 #popup {

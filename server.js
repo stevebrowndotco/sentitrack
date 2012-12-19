@@ -24,7 +24,7 @@ var io = require('socket.io').listen(server, { log:false });
 
 app.configure(function () {
     app.set('port', process.env.PORT || 3000);
-//    app.set('views', __dirname + '/views');
+    app.set('views', __dirname + '/views');
     app.engine('html', cons.mustache);
     app.set('view engine', 'html');
     app.set('views', __dirname + '/views');
@@ -196,6 +196,7 @@ function buildTweets(fileData) {
     var i = 0
     var averageSentiment = []
     var total = 0
+
 
     for (; tweetArray.length > 0 && i != tweetArray.length; i++) {
 

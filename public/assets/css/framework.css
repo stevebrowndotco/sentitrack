@@ -19,11 +19,11 @@ Twitter Bootstrap, HTML5 BoilerPlate and 3L code
 /* =Screen Size
 ==================================*/
 body {
-  background: #ffffff;
-  background-image: -moz-linear-gradient(top, #ffffff 0%, #f4f1f1 100%);
-  background-image: -webkit-linear-gradient(top, #ffffff 0%, #f4f1f1 100%);
-  background-image: -o-linear-gradient(top, #ffffff 0%, #f4f1f1 100%);
-  background-image: linear-gradient(to bottom, #ffffff 0%, #f4f1f1 100%);
+  background: #141414;
+  background-image: -moz-linear-gradient(top, #141414 0%, #ffffff 100%);
+  background-image: -webkit-linear-gradient(top, #141414 0%, #ffffff 100%);
+  background-image: -o-linear-gradient(top, #141414 0%, #ffffff 100%);
+  background-image: linear-gradient(to bottom, #141414 0%, #ffffff 100%);
   filter: progid:dximagetransform.microsoft.gradient(startColorstr='@color1', endColorstr='@color2', GradientType=0);
   position: fixed;
   top: 0;
@@ -35,13 +35,15 @@ h1 {
   text-align: center;
   font-weight: 900;
   letter-spacing: -1px;
+  font-weight: 100;
+  color: #f90050;
 }
 #container {
   position: fixed;
   top: 60px;
   left: 0;
   right: 0;
-  bottom: 50px;
+  bottom: 30px;
 }
 #tweetTicker li {
   float: left;
@@ -63,7 +65,7 @@ h1 {
   -moz-box-shadow: 0 0 20px #000000 inset;
   box-shadow: 0 0 20px #000000 inset;
   width: 100%;
-  height: 50px;
+  height: 58px;
   position: fixed;
   bottom: 0;
   -webkit-marquee-direction: left;

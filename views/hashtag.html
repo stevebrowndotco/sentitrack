@@ -48,7 +48,7 @@
 
     $(function () {
 
-        var socket = io.connect('http://198.61.231.43:3000/');
+        var socket = io.connect('http://localhost:3000/');
 
         var chart;
 
@@ -58,13 +58,13 @@
 
             var parseData = JSON.parse(data);
 
+            parseData.reverse();
+
             $.each(parseData, function (count, result) {
 
                 dataArray.push([result.time, result.averageSentiment]);
 
                 if (count == ( parseData.length - 1 ) && count > 1) {
-
-                    console.log(dataArray);
 
                     $(document).trigger('loadChart', [dataArray]);
 
@@ -86,13 +86,14 @@
                         fontFamily: "'helvetica neue', sans-serif",
                         fontSize: '14px'
                     },
-                    zoomType: 'x',
+                    zoomType: 'xy',
                     type: 'spline',
                     events:{
                         load:function () {
 
                             // Open a socket connection
                             var series = this.series[0];
+                            var series2 = this.series[1];
 
                             console.log('LOADED');
 
@@ -105,8 +106,8 @@
                                 var x = parseData.time, y = parseData.averageSentiment;
                                 series.addPoint([x, y], true, true);
 
-
                             });
+
 
                         }
 
@@ -115,14 +116,14 @@
 
                 yAxis: {
                     gridLineColor: '#1e1e1e',
-                    max: 7,
-                    min: 5
+                    max: 9,
+                    min: 1
                 },
 
                 xAxis: {
                     gridLineWidth: 1,
-                    gridLineColor: '#1e1e1e'
-//                    minRange: 30 * 24 * 3600
+                    gridLineColor: '#1e1e1e',
+                    minRange: 60000
                 },
 
                 credits:{
@@ -144,6 +145,11 @@
                     {
                         name:'Valence',
                         data:result
+                    },
+                    {
+                        name:'cool',
+                        data: [],
+                        color: 'blue'
                     }
                 ],
 

@@ -8,6 +8,7 @@ var express = require('express')
     , cons = require('consolidate');
 
 var tweetArray = [];
+var realTimeArray = [];
 var tweetData = {};
 
 var twit = new ntwitter({
@@ -69,7 +70,21 @@ function init() {
                     function (stream) {
                         console.log('Connected to Stream API!');
                         stream.on('data', function (data) {
+
                             tweetArray.push(data);
+
+//                            fs.readFile('anew.json', 'utf8', function (fileDataErr, fileData) {
+//
+//                                getSentiment(data, 'valence_mean', fileData, function (tweetData) {
+//
+//                                    var now = new Date(tweetData.time);
+//
+//                                    database.insert(now.getTime(), tweetData.sentimentResult, 'fastData');
+//
+//                                });
+//
+//                            });
+
                         });
 
                         fs.readFile('anew.json', 'utf8', function (fileDataErr, fileData) {
@@ -93,7 +108,7 @@ function init() {
 // Connect to the db
 function Database() {
 
-    this.insert = function (now, averageSentimentResult, callback) {
+    this.insert = function (now, averageSentimentResult, col, callback) {
 
         MongoClient.connect("mongodb://localhost:27017/storedTweets", function (err, db) {
 
@@ -101,7 +116,7 @@ function Database() {
                 return console.dir(err);
             }
 
-            var collection = db.collection('tweetData3');
+            var collection = db.collection(col);
 
             collection.insert({time:now, 'averageSentiment':averageSentimentResult}, {capped:true, size:99999999}, function (err) {
                 if (err) {
@@ -193,41 +208,39 @@ function getSentiment(tweetData, type, fileData, callback) {
 
 function buildTweets(fileData) {
 
-    var i = 0
-    var averageSentiment = []
-    var total = 0
+        var i = 0
+        var averageSentiment = []
+        var total = 0
 
+        for (; tweetArray.length > 0 && i != tweetArray.length; i++) {
 
-    for (; tweetArray.length > 0 && i != tweetArray.length; i++) {
+            getSentiment(tweetArray[i], 'valence_mean', fileData, function (tweetData) {
 
-        getSentiment(tweetArray[i], 'valence_mean', fileData, function (tweetData) {
+                if (!isNaN(tweetData.sentimentResult) && tweetData.sentimentResult > 0) {
 
-            if (!isNaN(tweetData.sentimentResult) && tweetData.sentimentResult > 0) {
+                    averageSentiment.push(tweetData.sentimentResult);
+                    total += tweetData.sentimentResult;
 
-                averageSentiment.push(tweetData.sentimentResult);
-                total += tweetData.sentimentResult;
+                }
 
-            }
+            });
 
-        });
+        }
 
-    }
+        if (i == (tweetArray.length) && !isNaN(total) && total > 0) {
 
-    if (i == (tweetArray.length) && !isNaN(total) && total > 0) {
+            var averageSentimentResult = total / averageSentiment.length;
 
-        var averageSentimentResult = total / averageSentiment.length;
+            var now = new Date().getTime();
 
-        var now = new Date().getTime();
+            console.log('Tweets found')
 
-        console.log('Tweets found')
+            database.insert(now, averageSentimentResult, 'tweetData3');
 
+        }
 
-        database.insert(now, averageSentimentResult);
-
-    }
-
-    //Empty the Array for next time
-    tweetArray.length = 0;
+        //Empty the Array for next time
+        tweetArray.length = 0;
 
 }
 
@@ -245,7 +258,9 @@ io.sockets.on('connection', function(socket) {
 
         console.log(socket.id + ' Requesting initial data');
 
-        collection.find().limit(288).toArray(function(err, results){
+        collection.find().sort({$natural:-1}).limit(288).toArray(function(err, results){
+
+            console.log(results);
             socket.emit('fullData', strencode(results));
 
         });
@@ -275,6 +290,29 @@ io.sockets.on('connection', function(socket) {
                     cursor.nextObject(function(err, message) {
                         if (err) throw err;
                           socket.emit('chart', strencode(message));
+                        next();
+                    });
+                })();
+            });
+        });
+
+        db.collection('fastData', function(err, collection2) {
+            if (err) throw err;
+
+            var latest2 = collection2.find({}).sort({ $natural: -1 }).limit(1);
+
+            latest2.nextObject(function(err, doc) {
+                if (err) throw err;
+
+                var query2 = { _id: { $gt: doc._id }};
+
+                var options2 = { tailable: true, awaitdata: true, numberOfRetries: -1 };
+                var cursor2 = collection2.find(query2, options2).sort({ $natural: 1 });
+
+                (function next() {
+                    cursor2.nextObject(function(err, message) {
+                        if (err) throw err;
+                        socket.emit('fastChart', strencode(message));
                         next();
                     });
                 })();

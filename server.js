@@ -296,28 +296,28 @@ io.sockets.on('connection', function(socket) {
             });
         });
 
-        db.collection('fastData', function(err, collection2) {
-            if (err) throw err;
-
-            var latest2 = collection2.find({}).sort({ $natural: -1 }).limit(1);
-
-            latest2.nextObject(function(err, doc) {
-                if (err) throw err;
-
-                var query2 = { _id: { $gt: doc._id }};
-
-                var options2 = { tailable: true, awaitdata: true, numberOfRetries: -1 };
-                var cursor2 = collection2.find(query2, options2).sort({ $natural: 1 });
-
-                (function next() {
-                    cursor2.nextObject(function(err, message) {
-                        if (err) throw err;
-                        socket.emit('fastChart', strencode(message));
-                        next();
-                    });
-                })();
-            });
-        });
+//        db.collection('fastData', function(err, collection2) {
+//            if (err) throw err;
+//
+//            var latest2 = collection2.find({}).sort({ $natural: -1 }).limit(1);
+//
+//            latest2.nextObject(function(err, doc) {
+//                if (err) throw err;
+//
+//                var query2 = { _id: { $gt: doc._id }};
+//
+//                var options2 = { tailable: true, awaitdata: true, numberOfRetries: -1 };
+//                var cursor2 = collection2.find(query2, options2).sort({ $natural: 1 });
+//
+//                (function next() {
+//                    cursor2.nextObject(function(err, message) {
+//                        if (err) throw err;
+//                        socket.emit('fastChart', strencode(message));
+//                        next();
+//                    });
+//                })();
+//            });
+//        });
 
 
     });

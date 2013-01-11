@@ -743,6 +743,15 @@ meta[name="description"][content=""]:before, meta[name="description"][content=" 
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='@color1', endColorstr='@color2',GradientType=1 );
 }
 
+.radial-gradient-quarter (@color1, @color2,@color3) {
+  background: @color3;
+  background-image: -moz-radial-gradient(center, @color1 0%, @color2 100%);
+  background-image: -webkit-radial-gradient(center, @color1 75%,@color2 100%);
+  background-image: -o-radial-gradient(center, @color1 0%,@color2 100%);
+  background-image: radial-gradient(at center, @color1 0%,@color2 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='@color1', endColorstr='@color2',GradientType=1 );
+}
+
 /*
  * Background-size
  * Scale (or not) your background image.

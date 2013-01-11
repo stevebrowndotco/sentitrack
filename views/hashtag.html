@@ -14,10 +14,15 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
     <script src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript"
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD_E0l80cecJgxZvPiIfDxdsNPFroA-LfE&sensor=true">
+    </script>
 </head>
 <body>
 
-<h1>Sentiment Tracker</h1>
+<h1>UK Real-Time Sentiment Tracker</h1>
+<div id="graphSwitch"></div>
+<div id="mapContainer"><div id="mapInner"></div></div>
 <div id="container"></div>
 
 <div id="tweetTicker" style="">
@@ -46,9 +51,13 @@
 
 <script>
 
+
+
     $(function () {
 
-        var socket = io.connect('http://198.61.231.43:3000/');
+        var socket = io.connect('http://localhost:3000/');
+
+        var socket2 = io.connect('http://localhost:3000/')
 
         var chart;
 
@@ -72,7 +81,13 @@
 
             });
 
+
+
         });
+
+
+
+
 
 
         $(document).bind('loadChart', function (e, result) {
@@ -97,7 +112,7 @@
 
                             console.log('LOADED');
 
-                            socket.on('chart', function (data) {
+                            socket.on('tweetData3', function (data) {
 
                                 var parseData = JSON.parse(data);
 
@@ -155,7 +170,7 @@
 
                 plotOptions: {
 
-                    spline: {
+                    candlestick: {
 
                         allowPointSelect: true,
 
@@ -202,7 +217,97 @@
             $('#mask').remove();
         })
 
+        function initMap() {
+            var mapOptions = {
+                zoom: 6,
+                center: new google.maps.LatLng(54,-3), // -6.547852,49.21042,0.571289,57.527622
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                disableDefaultUI: true
+            }
+            var map = new google.maps.Map(document.getElementById("mapInner"), mapOptions);
+
+            var styles = [
+                {
+                    "elementType": "labels",
+                    "stylers": [
+                        { "visibility": "off" }
+                    ]
+                },{
+                    "elementType": "geometry.stroke",
+                    "stylers": [
+                        { "visibility": "off" }
+                    ]
+                },{
+                    "featureType": "road",
+                    "stylers": [
+                        { "visibility": "off" }
+                    ]
+                },{
+                    "featureType": "transit",
+                    "stylers": [
+                        { "visibility": "off" }
+                    ]
+                },{
+                    "featureType": "water",
+                    "stylers": [
+                        { "color": "#252020" }
+                    ]
+                },{
+                    "stylers": [
+                        { "hue": "#2f2a2a" }
+                    ]
+                },{
+                    "featureType": "landscape",
+                    "stylers": [
+                        { "visibility": "off" }
+                    ]
+                },{
+                    "featureType": "poi",
+                    "stylers": [
+                        { "visibility": "off" }
+                    ]
+                },{
+                }
+            ]
+
+            map.setOptions({styles: styles});
+
+            socket2.on('fastData', function(data) {
+
+                data = JSON.parse(data);
+                console.log(data.geo[0]);
+
+                if (data.geo) {
+
+                    var marker = new google.maps.Marker({
+                        position: new google.maps.LatLng(data.geo[0], data.geo[1]),
+                        map: map,
+                        title:"Hello World!"
+                    });
+
+                    setTimeout(function(){
+
+                        console.log(marker);
+                        marker.setMap(null);
+                    }, 30000)
+
+                }
+
+
+
+
+
+            })
+        }
+
+        google.maps.event.addDomListener(window, "load", initMap());
+
+        $('#graphSwitch').on('click', function(){
+            $('#container, #mapContainer').toggleClass('switch');
+        })
+
     });
+
 
 </script>
 

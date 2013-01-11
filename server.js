@@ -10,6 +10,7 @@ var express = require('express')
 var tweetArray = [];
 var realTimeArray = [];
 var tweetData = {};
+var results;
 
 var twit = new ntwitter({
     consumer_key:'2BW4cCluZb9PwuUUYgnQ',
@@ -21,7 +22,11 @@ var twit = new ntwitter({
 var app = express();
 
 var server = http.createServer(app);
-var io = require('socket.io').listen(server, { log:false });
+var io = require('socket.io').listen(server, { log:true });
+
+var fastTweet;
+
+var trackKeyword = '$AAPL';
 
 app.configure(function () {
     app.set('port', process.env.PORT || 3000);
@@ -29,12 +34,6 @@ app.configure(function () {
     app.engine('html', cons.mustache);
     app.set('view engine', 'html');
     app.set('views', __dirname + '/views');
-//    app.use(express.favicon());
-//    app.use(express.logger('dev'));
-//    app.use(express.bodyParser());
-//    app.use(express.methodOverride());
-//    app.use(express.cookieParser('secretsession'));
-//    app.use(express.session());
     app.use(app.router);
     app.use(express.static(__dirname + '/public'));
 });
@@ -43,18 +42,12 @@ app.configure('development', function () {
     app.use(express.errorHandler());
 });
 
-//
-
 var MongoClient = require('mongodb').MongoClient;
-
-//
 
 var mongo = require('mongodb');
 
 var mongoServer = new mongo.Server('localhost', 27017);
 var db = new mongo.Db('storedTweets', mongoServer);
-
-//
 
 var database = new Database();
 
@@ -66,24 +59,34 @@ function init() {
             if (err) {
                 console.log("Verification failed : " + err)
             } else {
-                twit.stream('statuses/filter', {'locations':'-6.547852,49.21042,0.571289,57.527622'},
+                twit.stream('statuses/filter', {'track': trackKeyword},
                     function (stream) {
                         console.log('Connected to Stream API!');
                         stream.on('data', function (data) {
 
                             tweetArray.push(data);
 
-//                            fs.readFile('anew.json', 'utf8', function (fileDataErr, fileData) {
-//
-//                                getSentiment(data, 'valence_mean', fileData, function (tweetData) {
-//
-//                                    var now = new Date(tweetData.time);
-//
-//                                    database.insert(now.getTime(), tweetData.sentimentResult, 'fastData');
-//
-//                                });
-//
-//                            });
+                            fastTweet = data.text;
+
+                            fs.readFile('anew.json', 'utf8', function (fileDataErr, fileData) {
+
+                                getSentiment(data, 'valence_mean', fileData, function (tweetData) {
+
+                                    var geoResult = null;
+
+                                    if (data.geo) {
+
+                                        geoResult = data.geo.coordinates;
+
+                                    }
+
+                                    var document = {'time':data.created_at, 'sentiment':tweetData.sentimentResult, 'geo':geoResult }
+
+                                    database.insert(document, 'fastData');
+
+                                });
+
+                            });
 
                         });
 
@@ -95,7 +98,7 @@ function init() {
 
                             setInterval(function () {
                                 buildTweets(fileData)
-                            }, 600000); //every 30 seconds
+                            },30000 ); //every 30 seconds
 
                         });
 
@@ -105,10 +108,9 @@ function init() {
 
 }
 
-// Connect to the db
 function Database() {
 
-    this.insert = function (now, averageSentimentResult, col, callback) {
+    this.insert = function (document, col, callback) {
 
         MongoClient.connect("mongodb://localhost:27017/storedTweets", function (err, db) {
 
@@ -118,13 +120,11 @@ function Database() {
 
             var collection = db.collection(col);
 
-            collection.insert({time:now, 'averageSentiment':averageSentimentResult}, {capped:true, size:99999999}, function (err) {
+            collection.insert(document, {capped:true, size:99999999}, function (err) {
                 if (err) {
                     console.log(err)
                 }
             });
-
-            console.log('Saved tweets to the database');
 
             db.close();
 
@@ -152,28 +152,15 @@ function Database() {
 
 }
 
-/**
- * Above this line are Express Defaults.
- */
-
-app.get('/', routes.index);
-
-var results;
-
-// This function analyses a string for words and compares them against the anew dataset
 function getSentiment(tweetData, type, fileData, callback) {
 
     var tweetResult = {};
-
-    //Separate words in string to array
 
     if (tweetData) {
         var stringArray = tweetData.text.split(" ");
     }
 
     var sentimentResult;
-
-    // For each word in string, compare with ANEW Dataset
 
     results = JSON.parse(fileData);
 
@@ -189,8 +176,6 @@ function getSentiment(tweetData, type, fileData, callback) {
             totalTypeResult = parseFloat(totalTypeResult) + (parseFloat(results[0][wordToCompare][type]));
         }
     }
-
-    //Output the result
 
     sentimentResult = totalTypeResult / matchCount;
     if (sentimentResult) {
@@ -208,156 +193,149 @@ function getSentiment(tweetData, type, fileData, callback) {
 
 function buildTweets(fileData) {
 
-        var i = 0
-        var averageSentiment = []
-        var total = 0
+    var i = 0
+    var averageSentiment = []
+    var total = 0
 
-        for (; tweetArray.length > 0 && i != tweetArray.length; i++) {
+    for (; tweetArray.length > 0 && i != tweetArray.length; i++) {
 
-            getSentiment(tweetArray[i], 'valence_mean', fileData, function (tweetData) {
+        getSentiment(tweetArray[i], 'valence_mean', fileData, function (tweetData) {
 
-                if (!isNaN(tweetData.sentimentResult) && tweetData.sentimentResult > 0) {
+            if (!isNaN(tweetData.sentimentResult) && tweetData.sentimentResult > 0) {
 
-                    averageSentiment.push(tweetData.sentimentResult);
-                    total += tweetData.sentimentResult;
+                averageSentiment.push(tweetData.sentimentResult);
+                total += tweetData.sentimentResult;
 
-                }
+            }
 
-            });
+        });
 
-        }
+    }
 
-        if (i == (tweetArray.length) && !isNaN(total) && total > 0) {
+    if (i == (tweetArray.length) && !isNaN(total) && total > 0) {
 
-            var averageSentimentResult = total / averageSentiment.length;
+        var averageSentimentResult = total / averageSentiment.length;
 
-            var now = new Date().getTime();
+        var now = new Date().getTime();
 
-            console.log('Tweets found')
+        var document = { 'time':now, 'averageSentiment':averageSentimentResult, 'text': tweetData.text }
 
-            database.insert(now, averageSentimentResult, 'tweetData3');
+        database.insert(document, 'tweetData3');
 
-        }
+    }
 
-        //Empty the Array for next time
-        tweetArray.length = 0;
+    tweetArray.length = 0;
 
 }
 
-app.get('/hashtag', function (req, res) {
-    res.render('hashtag');
-})
+function initiateClient(socket) {
 
-io.sockets.on('connection', function(socket) {
+    console.log(socket.id + ' connected');
+    db.close();
 
-    console.log(socket.id+' connected');
-
-    db.close(); //Close if client is reconnected to avoid crashes!
-
-    database.retrieve(function(collection){
+    database.retrieve(function (collection) {
 
         console.log(socket.id + ' Requesting initial data');
 
-        collection.find().sort({$natural:-1}).limit(288).toArray(function(err, results){
+            collection.find().sort({$natural:-1}).limit(288).toArray(function (err, results) {
 
-            console.log(results);
             socket.emit('fullData', strencode(results));
 
         });
 
     })
 
-    // Check for changes to database and push
-    db.open(function(err) {
+}
 
-        console.log('opening tweetData collection');
+function watchTweets(trackedCollections, socket) {
+
+    db.open(function (err) {
+
         if (err) throw err;
 
-        db.collection('tweetData3', function(err, collection) {
-            if (err) throw err;
+        console.log('tracking: '+trackedCollections);
 
-            var latest = collection.find({}).sort({ $natural: -1 }).limit(1);
+        for (var i = 0; i < (trackedCollections.length);) {
 
-            latest.nextObject(function(err, doc) {
-                if (err) throw err;
+            var thisCollection = trackedCollections[i];
 
-                var query = { _id: { $gt: doc._id }};
+            pushTweets(thisCollection, i, socket);
 
-                var options = { tailable: true, awaitdata: true, numberOfRetries: -1 };
-                var cursor = collection.find(query, options).sort({ $natural: 1 });
-
-                (function next() {
-                    cursor.nextObject(function(err, message) {
-                        if (err) throw err;
-                          socket.emit('chart', strencode(message));
-                        next();
-                    });
-                })();
-            });
-        });
-
-//        db.collection('fastData', function(err, collection2) {
-//            if (err) throw err;
-//
-//            var latest2 = collection2.find({}).sort({ $natural: -1 }).limit(1);
-//
-//            latest2.nextObject(function(err, doc) {
-//                if (err) throw err;
-//
-//                var query2 = { _id: { $gt: doc._id }};
-//
-//                var options2 = { tailable: true, awaitdata: true, numberOfRetries: -1 };
-//                var cursor2 = collection2.find(query2, options2).sort({ $natural: 1 });
-//
-//                (function next() {
-//                    cursor2.nextObject(function(err, message) {
-//                        if (err) throw err;
-//                        socket.emit('fastChart', strencode(message));
-//                        next();
-//                    });
-//                })();
-//            });
-//        });
-
+            i++;
+        }
 
     });
 
-    socket.on('reconnect', function(socket){
+}
 
-        console.log(socket.id+' reconnected');
+function pushTweets(thisCollection, i, socket) {
 
-    })
+    console.log('watching' + thisCollection);
 
-    socket.on('disconnect', function(socket){
+    db.collection(thisCollection, function (err, collection) {
 
-        console.log('disconnected');
+        if (err) throw err;
 
-    })
+        var latest = collection.find({}).sort({ $natural:-1 }).limit(1);
 
-})
+        latest.nextObject(function (err, doc) {
+            if (err) throw err;
+
+            var query = { _id:{ $gt:doc._id }};
+
+            var options = { tailable:true, awaitdata:true, numberOfRetries:-1 };
+            var cursor = collection.find(query, options).sort({ $natural:1 });
+
+
+            (function next() {
+
+                console.log('found in'+thisCollection+'...'+i);
+
+                cursor.nextObject(function (err, message) {
+                    if (err) throw err;
+                    socket.emit(thisCollection, strencode(message));
+                    next();
+                });
+            })();
+        });
+    });
+
+}
+
+function strencode(data) {
+    return unescape(encodeURIComponent(JSON.stringify(data)));
+}
+
+function strdecode(data) {
+    return JSON.parse(decodeURIComponent(escape(data)));
+}
 
 server.listen(app.get('port'), function () {
     console.log("Express server listening on port " + app.get('port'));
 });
 
-var escapable = /[\x00-\x1f\ud800-\udfff\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufff0-\uffff]/g;
+app.get('/', routes.index);
 
-function filterUnicode(quoted){
+app.get('/hashtag', function (req, res) {
+    res.render('hashtag');
+})
 
-    escapable.lastIndex = 0;
-    if( !escapable.test(quoted)) return quoted;
+io.sockets.on('connection', function (socket) {
 
-    return quoted.replace( escapable, function(a){
-        return '';
-    });
-}
+    var trackedCollections = ['tweetData3','fastData']
 
-function strencode( data ) {
-    return unescape( encodeURIComponent( JSON.stringify( data ) ) );
-}
+    initiateClient(socket);
 
-function strdecode( data ) {
-    return JSON.parse( decodeURIComponent( escape ( data ) ) );
-}
+    watchTweets(trackedCollections, socket);
+
+    socket.on('reconnect', function (socket) {
+        console.log(socket.id + ' reconnected');
+    })
+
+    socket.on('disconnect', function (socket) {
+        console.log('disconnected');
+    })
+
+})
 
 init();

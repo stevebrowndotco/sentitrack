@@ -1,4 +1,4 @@
-Welcome to Sentitrack!
+#Welcome to Sentitrack!
 
 Sentitrack is a tool that queries the twitter streaming api for any give topic, username, or hashtag to discover the sentiment in real time.
 Each tweet is analysed through the ANEW dataset, which is research data that measures the sentiment of words in the english dictionary.

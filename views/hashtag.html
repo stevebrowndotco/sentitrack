@@ -53,10 +53,11 @@
 
     $(function () {
 
-        var tweetSocket = io.connect('http://127.0.0.1:3000/'),
-            mapSocket = io.connect('http://127.0.0.1:3000/'),
-            chart;
 
+
+        var tweetSocket = io.connect('http://127.0.0.1'),
+            mapSocket = io.connect('http://127.0.0.1'),
+            chart;
         tweetSocket.on('fullData', function (data) {
             var dataArray = [],
                 parseData = JSON.parse(data);
@@ -68,6 +69,8 @@
                 }
             });
         });
+
+
 
         $(document).bind('loadChart', function (e, result) {
             var chartOptions = {
@@ -92,9 +95,9 @@
 
                                 var parseData = JSON.parse(data);
 
-                                console.log('CHART connected');
-
                                 var x = parseData.time, y = parseData.averageSentiment;
+
+                                console.log(x,y);
                                 series.addPoint([x, y], true, true);
 
                             });
@@ -248,9 +251,9 @@
             map.setOptions({styles: styles});
 
             mapSocket.on('fastData', function(data) {
+                console.log(data);
 
                 data = JSON.parse(data);
-                console.log(data.geo[0]);
 
                 if (data.geo) {
 

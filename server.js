@@ -7,7 +7,6 @@
         ntwitter = require('ntwitter'),
         fs = require('fs'),
         cons = require('consolidate'),
-        io = require('socket.io').listen(server, { log:true }),
         MongoClient = require('mongodb').MongoClient,
         mongo = require('mongodb'),
         streamedTweetsList = [],
@@ -20,12 +19,15 @@
         twitter = new ntwitter(twitterCredentials),
         app = express(),
         server = http.createServer(app),
+        io = require('socket.io').listen(server, { log:false }),
         trackKeyword = 'cool',
         mongoServer = new mongo.Server('localhost', 27017),
         db = new mongo.Db('storedTweets', mongoServer),
         database = new Database(),
         dataSource = 'data/anew-dataset.json',
-        averageSpeed = 5000;
+        averageSpeed = 30000,
+        events = require('events'),
+        eventEmitter = new events.EventEmitter();
 
     app.configure(function () {
         app.set('port', process.env.PORT || 3000);
@@ -37,21 +39,8 @@
         app.use(express.static(__dirname + '/public'));
     });
 
-    app.configure('development', function () {
-        app.use(express.errorHandler());
-    });
-
-    app.get('/', routes.index);
-
-    app.get('/hashtag', function (req, res) {
-        res.render('hashtag');
-    })
-
-    server.listen(app.get('port'), function () {
-        console.log("Express server listening on port " + app.get('port'));
-    });
-
     function init() {
+
         connectToTwitter(function(data){
             console.log('Twitter Verified!');
             var endpoint = 'statuses/filter';
@@ -83,29 +72,30 @@
             var sentiment = Helpers.getTweetSentiment(rawTweetData, 'valence_mean', contents); //'Valence mean' is the sentiment.
             var tweet = createTweet(rawTweetData, sentiment);
             streamedTweetsList.push(tweet);
+            eventEmitter.emit('newTweet', Helpers.strencode(tweet));
         });
     }
 
     function createTweet(rawTweetData, sentiment) {
-        var geoResult = null,
-            tweet;
+        var geoResult = null;
         if (rawTweetData.geo) geoResult = rawTweetData.geo.coordinates;
-        tweet = {
+        return {
             'time': rawTweetData.created_at,
             'text' : rawTweetData.text,
             'sentiment': sentiment,
             'geo': geoResult
-        }
-        return tweet;
+        };
     }
 
     function tweetListener() {
-        setInterval(sendSaveAverageTweet, averageSpeed);
+        setInterval(saveAverageTweet, averageSpeed);
     }
 
-    function sendSaveAverageTweet() {
-        database.insert(getAverageTweet, 'tweetData3');
-        Helpers.emptyArray(streamedTweetsList);
+    function saveAverageTweet() {
+        var averageTweet = getAverageTweet(streamedTweetsList);
+        database.insert(averageTweet, 'tweetData3',function(){
+            Helpers.emptyArray(streamedTweetsList); //Empty the tweets when successfully saved to database.
+        });
     }
 
     function calculateTweetAverage(individualTweets) {
@@ -133,7 +123,7 @@
         database.retrieve(function (collection) {
             console.log(socket.id + ' Requesting initial data');
             collection.find().sort({$natural:-1}).limit(288).toArray(function (err, results) {
-                socket.emit('fullData', strencode(results));
+                socket.emit('fullData', Helpers.strencode(results));
             });
         })
     }
@@ -148,48 +138,33 @@
                 i++;
             }
         });
+        eventEmitter.on('newTweet', function(response){
+            socket.emit('fastData', response);
+        });
+
     }
 
     function pushTweets(thisCollection, i, socket) {
-
         console.log('watching' + thisCollection);
-
         db.collection(thisCollection, function (err, collection) {
-
             if (err) throw err;
-
             var latest = collection.find({}).sort({ $natural:-1 }).limit(1);
-
             latest.nextObject(function (err, doc) {
                 if (err) throw err;
-
                 var query = { _id:{ $gt:doc._id }};
-
                 var options = { tailable:true, awaitdata:true, numberOfRetries:-1 };
                 var cursor = collection.find(query, options).sort({ $natural:1 });
-
-
                 (function next() {
-
                     console.log('found in'+thisCollection+'...'+i);
-
                     cursor.nextObject(function (err, message) {
                         if (err) throw err;
-                        socket.emit(thisCollection, strencode(message));
+                        socket.emit(thisCollection, Helpers.strencode(message));
                         next();
                     });
                 })();
             });
         });
 
-    }
-
-    function strencode(data) {
-        return unescape(encodeURIComponent(JSON.stringify(data)));
-    }
-
-    function strdecode(data) {
-        return JSON.parse(decodeURIComponent(escape(data)));
     }
 
     io.sockets.on('connection', function (socket) {
@@ -251,11 +226,17 @@
         },
         emptyArray: function (array) {
             array.length = 0;
+        },
+        strencode: function(data) {
+            return unescape(encodeURIComponent(JSON.stringify(data)));
+        },
+        strdecode: function(data) {
+            return JSON.parse(decodeURIComponent(escape(data)));
         }
     }
 
     function Database() {
-        this.insert = function (document, col) {
+        this.insert = function (document, col, callback) {
             MongoClient.connect("mongodb://localhost:27017/storedTweets", function (err, db) {
                 if (err) return console.dir(err);
                 var collection = db.collection(col);
@@ -263,21 +244,36 @@
                     if (err) console.log(err);
                 });
                 db.close();
+                callback();
             });
         },
-            this.retrieve = function (callback) {
-                MongoClient.connect("mongodb://localhost:27017/storedTweets", function (err, db) {
-                    if (err) {
-                        return console.dir(err);
-                    }
-                    var collection = db.collection('tweetData3');
-                    callback(collection);
-                    db.close();
-                });
-            }
+        this.retrieve = function (callback) {
+            MongoClient.connect("mongodb://localhost:27017/storedTweets", function (err, db) {
+                if (err) {
+                    return console.dir(err);
+                }
+                var collection = db.collection('tweetData3');
+                callback(collection);
+                db.close();
+            });
+        }
     }
 
     init();
+
+    app.configure('development', function () {
+        app.use(express.errorHandler());
+    });
+
+    app.get('/', routes.index);
+
+    app.get('/hashtag', function (req, res) {
+        res.render('hashtag');
+    })
+
+    server.listen(app.get('port'), function () {
+        console.log("Express server listening on port " + app.get('port'));
+    });
 
 })();
 

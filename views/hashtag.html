@@ -51,51 +51,28 @@
 
 <script>
 
-
-
     $(function () {
 
-        var socket = io.connect('http://localhost:3000/');
+        var tweetSocket = io.connect('http://127.0.0.1:3000/'),
+            mapSocket = io.connect('http://127.0.0.1:3000/'),
+            chart;
 
-        var socket2 = io.connect('http://localhost:3000/')
-
-        var chart;
-
-        socket.on('fullData', function (data) {
-
-            var dataArray = [];
-
-            var parseData = JSON.parse(data);
-
+        tweetSocket.on('fullData', function (data) {
+            var dataArray = [],
+                parseData = JSON.parse(data);
             parseData.reverse();
-
             $.each(parseData, function (count, result) {
-
                 dataArray.push([result.time, result.averageSentiment]);
-
                 if (count == ( parseData.length - 1 ) && count > 1) {
-
                     $(document).trigger('loadChart', [dataArray]);
-
                 }
-
             });
-
-
-
         });
 
-
-
-
-
-
         $(document).bind('loadChart', function (e, result) {
-
-            // Create the chart
-            chart = new Highcharts.StockChart({
-                chart:{
-                    renderTo:'container',
+            var chartOptions = {
+                chart: {
+                    renderTo: 'container',
                     backgroundColor: 'transparent',
                     style: {
                         fontFamily: "'helvetica neue', sans-serif",
@@ -103,16 +80,15 @@
                     },
                     zoomType: 'xy',
                     type: 'spline',
-                    events:{
-                        load:function () {
-
+                    events: {
+                        load: function () {
                             // Open a socket connection
                             var series = this.series[0];
                             var series2 = this.series[1];
 
                             console.log('LOADED');
 
-                            socket.on('tweetData3', function (data) {
+                            tweetSocket.on('tweetData3', function (data) {
 
                                 var parseData = JSON.parse(data);
 
@@ -141,12 +117,12 @@
                     minRange: 60000
                 },
 
-                credits:{
-                    enabled:false
+                credits: {
+                    enabled: false
                 },
 
                 rangeSelector: {
-                    selected:0,
+                    selected: 0,
                     enabled: false
                 },
 
@@ -156,13 +132,13 @@
 
                 },
 
-                series:[
+                series: [
                     {
-                        name:'Valence',
-                        data:result
+                        name: 'Valence',
+                        data: result
                     },
                     {
-                        name:'cool',
+                        name: 'cool',
                         data: [],
                         color: 'blue'
                     }
@@ -170,7 +146,7 @@
 
                 plotOptions: {
 
-                    candlestick: {
+                    spline: {
 
                         allowPointSelect: true,
 
@@ -178,7 +154,7 @@
 
                         events: {
 
-                            click: function(event) {
+                            click: function (event) {
 
                                 console.log(event);
 
@@ -193,12 +169,11 @@
 
 
                 }
-            });
+            }
+            chart = new Highcharts.StockChart(chartOptions);
         });
 
         function popup(event) {
-
-            console.log(event);
 
             if( $('#mask').length > 0 ) {
                 $('#mask').remove();
@@ -272,7 +247,7 @@
 
             map.setOptions({styles: styles});
 
-            socket2.on('fastData', function(data) {
+            mapSocket.on('fastData', function(data) {
 
                 data = JSON.parse(data);
                 console.log(data.geo[0]);

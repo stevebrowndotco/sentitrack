@@ -19,13 +19,14 @@ Twitter Bootstrap, HTML5 BoilerPlate and 3L code
 /* =Screen Size
 ==================================*/
 body {
-  background: #ffffff;
-  background-image: -moz-linear-gradient(top, #ffffff 0%, #f4f1f1 100%);
-  background-image: -webkit-linear-gradient(top, #ffffff 0%, #f4f1f1 100%);
-  background-image: -o-linear-gradient(top, #ffffff 0%, #f4f1f1 100%);
-  background-image: linear-gradient(to bottom, #ffffff 0%, #f4f1f1 100%);
-  filter: progid:dximagetransform.microsoft.gradient(startColorstr='@color1', endColorstr='@color2', GradientType=0);
+  background: #2a2424;
+  background-image: -moz-radial-gradient(center, #2a2424 0%, #141414 100%);
+  background-image: -webkit-radial-gradient(center, #2a2424 0%, #141414 100%);
+  background-image: -o-radial-gradient(center, #2a2424 0%, #141414 100%);
+  background-image: radial-gradient(at center, #2a2424 0%, #141414 100%);
+  filter: progid:dximagetransform.microsoft.gradient(startColorstr='@color1', endColorstr='@color2', GradientType=1);
   position: fixed;
+  background-attachment: fixed;
   top: 0;
   bottom: 0;
   left: 0;
@@ -33,15 +34,18 @@ body {
 }
 h1 {
   text-align: center;
+  text-align: center;
   font-weight: 900;
   letter-spacing: -1px;
+  font-weight: 100;
+  color: #f90050;
 }
 #container {
   position: fixed;
   top: 60px;
   left: 0;
   right: 0;
-  bottom: 50px;
+  bottom: 30px;
 }
 #tweetTicker li {
   float: left;
@@ -63,7 +67,7 @@ h1 {
   -moz-box-shadow: 0 0 20px #000000 inset;
   box-shadow: 0 0 20px #000000 inset;
   width: 100%;
-  height: 50px;
+  height: 58px;
   position: fixed;
   bottom: 0;
   -webkit-marquee-direction: left;
@@ -129,6 +133,33 @@ h1 {
 }
 #popup ul li {
   margin: 0 0 10px 0;
+}
+#mapContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.001;
+  filter: alpha(opacity=0.1);
+  opacity: 0.1;
+  filter: alpha(opacity= 10 );
+}
+#mapContainer #mapInner {
+  width: 100%;
+  height: 100%;
+}
+#graphSwitch {
+  width: 50px;
+  height: 50px;
+  position: fixed;
+  z-index: 99;
+  background: blue;
+  top: 5px;
+  right: 5px;
+}
+#container.switch {
+  display: none;
 }
 /* Core Styling */
 /* HTML5 ✰ Boilerplate

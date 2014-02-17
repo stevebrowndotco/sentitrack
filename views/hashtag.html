@@ -14,10 +14,15 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
     <script src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript"
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD_E0l80cecJgxZvPiIfDxdsNPFroA-LfE&sensor=true">
+    </script>
 </head>
 <body>
 
-<h1>Sentiment Tracker</h1>
+<h1>UK Real-Time Sentiment Tracker</h1>
+<div id="graphSwitch"></div>
+<div id="mapContainer"><div id="mapInner"></div></div>
 <div id="container"></div>
 
 <div id="tweetTicker" style="">
@@ -48,71 +53,63 @@
 
     $(function () {
 
-        var socket = io.connect('http://198.61.231.43:3000/');
 
-        var chart;
 
-        socket.on('fullData', function (data) {
-
-            var dataArray = [];
-
-            var parseData = JSON.parse(data);
-
+        var tweetSocket = io.connect('http://127.0.0.1'),
+            mapSocket = io.connect('http://127.0.0.1'),
+            chart;
+        tweetSocket.on('fullData', function (data) {
+            var dataArray = [],
+                parseData = JSON.parse(data);
+            parseData.reverse();
             $.each(parseData, function (count, result) {
-
-                dataArray.push([result.time, result.averageSentiment, result.tweetGroup]);
-
+                dataArray.push([result.time, result.averageSentiment]);
                 if (count == ( parseData.length - 1 ) && count > 1) {
-
-                    console.log(dataArray);
-
                     $(document).trigger('loadChart', [dataArray]);
-
                 }
-
             });
-
         });
 
 
-        $(document).bind('loadChart', function (e, result) {
 
-            // Create the chart
-            chart = new Highcharts.StockChart({
-                chart:{
-                    renderTo:'container',
+        $(document).bind('loadChart', function (e, result) {
+            var chartOptions = {
+                chart: {
+                    renderTo: 'container',
                     backgroundColor: 'transparent',
                     style: {
                         fontFamily: "'helvetica neue', sans-serif",
                         fontSize: '14px'
                     },
+                    zoomType: 'xy',
                     type: 'spline',
-                    events:{
-                        load:function () {
-
+                    events: {
+                        load: function () {
                             // Open a socket connection
                             var series = this.series[0];
+                            var series2 = this.series[1];
 
                             console.log('LOADED');
 
-                            socket.on('chart', function (data) {
+                            tweetSocket.on('tweetData3', function (data) {
 
                                 var parseData = JSON.parse(data);
 
-                                console.log('CHART connected');
-
                                 var x = parseData.time, y = parseData.averageSentiment;
-                                series.addPoint([x, y, parseData.tweetGroup], true, true);
+
+                                console.log(x,y);
+                                series.addPoint([x, y], true, true);
 
                                 $('#tweetTicker ul').empty();
 
-                                $.each(parseData.tweetGroup, function (count, value) {
+                                $.each(data, function (count, value) {
 
-                                    $('#tweetTicker ul').append('<li class="ellipsis"><div class="square"></div>' + value.tweetText + '</li>');
+//                                    $('#tweetTicker ul').append('<li class="ellipsis"><div class="square"></div>' + value.tweetText + '</li>');
+                                })
 
-                                });
 
                             });
+
 
                         }
 
@@ -120,29 +117,41 @@
                 },
 
                 yAxis: {
-                    gridLineColor: '#eee',
+                    gridLineColor: '#1e1e1e',
                     max: 9,
                     min: 1
                 },
 
                 xAxis: {
                     gridLineWidth: 1,
-                    gridLineColor: '#eee'
-//                    minRange: 30 * 24 * 3600
+                    gridLineColor: '#1e1e1e',
+                    minRange: 60000
                 },
 
-                credits:{
-                    enabled:false
+                credits: {
+                    enabled: false
                 },
 
                 rangeSelector: {
-                    selected:0
+                    selected: 0,
+                    enabled: false
                 },
 
-                series:[
+                navigator: {
+
+                    maskFill: 'rgba(0, 0, 0, 0.8)'
+
+                },
+
+                series: [
                     {
-                        name:'Valence',
-                        data:result
+                        name: 'Valence',
+                        data: result
+                    },
+                    {
+                        name: 'cool',
+                        data: [],
+                        color: 'blue'
                     }
                 ],
 
@@ -152,11 +161,13 @@
 
                         allowPointSelect: true,
 
+                        color: '#f90050',
+
                         events: {
 
-                            click: function(event) {
+                            click: function (event) {
 
-                                console.log(event);
+//                                console.log(event);
 
                                 popup(event);
 
@@ -169,12 +180,11 @@
 
 
                 }
-            });
+            }
+            chart = new Highcharts.StockChart(chartOptions);
         });
 
         function popup(event) {
-
-            console.log(event);
 
             if( $('#mask').length > 0 ) {
                 $('#mask').remove();
@@ -184,7 +194,7 @@
 
             $.each(event.point.config[2], function(count,value) {
 
-                    console.log(event.point.config[2][count]);
+//                    console.log(event.point.config[2][count]);
                 $('#popup ul').append('<li>'+event.point.config[2][count].tweetText+' <strong>'+event.point.config[2][count].sentimentResult+'</strong></li>');
             });
         }
@@ -193,7 +203,92 @@
             $('#mask').remove();
         })
 
+        function initMap() {
+            var mapOptions = {
+                zoom: 6,
+                center: new google.maps.LatLng(54,-3), // -6.547852,49.21042,0.571289,57.527622
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                disableDefaultUI: true
+            }
+            var map = new google.maps.Map(document.getElementById("mapInner"), mapOptions);
+
+            var styles = [
+                {
+                    "elementType": "labels",
+                    "stylers": [
+                        { "visibility": "off" }
+                    ]
+                },{
+                    "elementType": "geometry.stroke",
+                    "stylers": [
+                        { "visibility": "off" }
+                    ]
+                },{
+                    "featureType": "road",
+                    "stylers": [
+                        { "visibility": "off" }
+                    ]
+                },{
+                    "featureType": "transit",
+                    "stylers": [
+                        { "visibility": "off" }
+                    ]
+                },{
+                    "featureType": "water",
+                    "stylers": [
+                        { "color": "#252020" }
+                    ]
+                },{
+                    "stylers": [
+                        { "hue": "#2f2a2a" }
+                    ]
+                },{
+                    "featureType": "landscape",
+                    "stylers": [
+                        { "visibility": "off" }
+                    ]
+                },{
+                    "featureType": "poi",
+                    "stylers": [
+                        { "visibility": "off" }
+                    ]
+                },{
+                }
+            ]
+
+            map.setOptions({styles: styles});
+
+            mapSocket.on('fastData', function (data) {
+//                console.log(data);
+
+                data = JSON.parse(data);
+
+                   if (data.geo) {
+
+                    var marker = new google.maps.Marker({
+                        position: new google.maps.LatLng(data.geo[0], data.geo[1]),
+                        map: map,
+                        title: "Hello World!"
+                    });
+
+                    setTimeout(function () {
+
+                        marker.setMap(null);
+                    }, 30000)
+
+                }
+
+            })
+        }
+
+        google.maps.event.addDomListener(window, "load", initMap());
+
+        $('#graphSwitch').on('click', function(){
+            $('#container, #mapContainer').toggleClass('switch');
+        })
+
     });
+
 
 </script>
 

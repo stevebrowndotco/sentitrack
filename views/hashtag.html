@@ -100,6 +100,14 @@
                                 console.log(x,y);
                                 series.addPoint([x, y], true, true);
 
+                                $('#tweetTicker ul').empty();
+
+                                $.each(data, function (count, value) {
+
+//                                    $('#tweetTicker ul').append('<li class="ellipsis"><div class="square"></div>' + value.tweetText + '</li>');
+                                })
+
+
                             });
 
 
@@ -159,7 +167,7 @@
 
                             click: function (event) {
 
-                                console.log(event);
+//                                console.log(event);
 
                                 popup(event);
 
@@ -186,7 +194,7 @@
 
             $.each(event.point.config[2], function(count,value) {
 
-                    console.log(event.point.config[2][count]);
+//                    console.log(event.point.config[2][count]);
                 $('#popup ul').append('<li>'+event.point.config[2][count].tweetText+' <strong>'+event.point.config[2][count].sentimentResult+'</strong></li>');
             });
         }
@@ -250,30 +258,25 @@
 
             map.setOptions({styles: styles});
 
-            mapSocket.on('fastData', function(data) {
-                console.log(data);
+            mapSocket.on('fastData', function (data) {
+//                console.log(data);
 
                 data = JSON.parse(data);
 
-                if (data.geo) {
+                   if (data.geo) {
 
                     var marker = new google.maps.Marker({
                         position: new google.maps.LatLng(data.geo[0], data.geo[1]),
                         map: map,
-                        title:"Hello World!"
+                        title: "Hello World!"
                     });
 
-                    setTimeout(function(){
+                    setTimeout(function () {
 
-                        console.log(marker);
                         marker.setMap(null);
                     }, 30000)
 
                 }
-
-
-
-
 
             })
         }

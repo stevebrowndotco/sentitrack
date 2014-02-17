@@ -5,9 +5,9 @@
         http = require('http'),
         path = require('path'),
         ntwitter = require('ntwitter'),
+        MongoClient = require('mongodb').MongoClient,
         fs = require('fs'),
         cons = require('consolidate'),
-        MongoClient = require('mongodb').MongoClient,
         mongo = require('mongodb'),
         streamedTweetsList = [],
         twitterCredentials = {
@@ -40,11 +40,10 @@
     });
 
     function init() {
-
-        connectToTwitter(function(data){
+        connectToTwitter(function(data) {
             console.log('Twitter Verified!');
             var endpoint = 'statuses/filter';
-            var filter = {'track': trackKeyword}
+            var filter = {'locations':'-6.547852,49.21042,0.571289,57.527622'}
             twitterStream(endpoint, filter);
         });
     }
@@ -93,6 +92,7 @@
 
     function saveAverageTweet() {
         var averageTweet = getAverageTweet(streamedTweetsList);
+        console.log(averageTweet);
         database.insert(averageTweet, 'tweetData3',function(){
             Helpers.emptyArray(streamedTweetsList); //Empty the tweets when successfully saved to database.
         });
@@ -141,7 +141,6 @@
         eventEmitter.on('newTweet', function(response){
             socket.emit('fastData', response);
         });
-
     }
 
     function pushTweets(thisCollection, i, socket) {
@@ -164,7 +163,6 @@
                 })();
             });
         });
-
     }
 
     io.sockets.on('connection', function (socket) {
